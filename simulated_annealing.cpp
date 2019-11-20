@@ -42,6 +42,7 @@ int main()
 	int T = 10;
 	int neighscore, idx1, idx2;
 	double p;
+	double a = 0.95;
 
 	std::cout << "initial path: ";
 	std::copy(path, path+dim, std::ostream_iterator<int>(std::cout, " "));
@@ -65,6 +66,7 @@ int main()
 		}
 		priorscore = neighscore;
 		i++;
+		T *= a;
 	}
 
 	std::cout << "final path: ";
