@@ -6,7 +6,6 @@
 
 using namespace std;
 
-
 int main()
 {
     string line;
@@ -33,18 +32,18 @@ int main()
     {
         while (getline(tsp_inp,line) )
         {
-                count_line += 1;
-                if((count_line >= 6) && (count_line < (dim+6)))
-                {
-                    istringstream iss(line);
-                    int a;
-                    double b,c;
-                    if (iss >> a >> b >> c) {
-                        coord[i][0] = b;
-                        coord[i][1] = c;
-                        i++;
-                    }
+            count_line += 1;
+            if((count_line >= 6) && (count_line < (dim+6)))
+            {
+                istringstream iss(line);
+                int a;
+                double b,c;
+                if (iss >> a >> b >> c) {
+                    coord[i][0] = b;
+                    coord[i][1] = c;
+                    i++;
                 }
+            }
         }
     }
     for(i=0;i<dim;i++)
