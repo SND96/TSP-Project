@@ -14,10 +14,21 @@ int get_score(int* path, int** dist, int dim)
 	return score;
 }
 
-int* simann(int** dist, int dim)
+void print_path(int* path, int dim, int** dist)
 {
-	int* path = new int[dim];
+	std::cout << "path: ";
+	std::copy(path, path+dim, std::ostream_iterator<int>(std::cout, " "));
+	std::cout << "\n";
+	std::cout << "score: " << get_score(path, dist, dim) << "\n";
+}
+
+int* simann(int** dist, int dim, bool verbose=false)
+{
+	int path[dim];
 	std::iota(path, path+dim, 0);
+
+	int *bestpath = new int[dim];
+	std::copy(path, path+dim, bestpath);
 
 	// randomize initial values
 	std::random_device rd;
@@ -33,10 +44,9 @@ int* simann(int** dist, int dim)
 	double alpha = 0.95, beta = 5;
 	std::clock_t start;
 
-	std::cout << "initial path: ";
-	std::copy(path, path+dim, std::ostream_iterator<int>(std::cout, " "));
-	std::cout << "\n";
-	std::cout << "initial score: " << priorscore << "\n";
+	if (verbose)
+		std::cout << "Initial:\n";
+		print_path(bestpath, dim, dist);
 
 	while (true)
 	{
@@ -66,22 +76,35 @@ int* simann(int** dist, int dim)
 				p = exp((double)(priorscore-neighscore)/T);
 				if ((double) std::rand()/RAND_MAX < p)
 					std::swap(path[idx1], path[idx2]);
+				else
+					priorscore = neighscore;
 			}
-			priorscore = neighscore;
+			else
+			{
+				priorscore = neighscore;
+			}
+
 			steps--;
 		}
 
-		// check for score improvement
+		// check and reflect any score improvement
 		if (priorscore < bestscore)
+		{
 			bestscore = priorscore;
+			std::copy(path, path+dim, bestpath);
+		}
 		else
+		{
+			priorscore = bestscore;
+			std::copy(bestpath, bestpath+dim, path);
 			j++;
+		}
 
 		// geometric cooling
 		T *= alpha;
 	}
 
-	return path;
+	return bestpath;
 }
 
 int main()
@@ -97,13 +120,9 @@ int main()
 		for (int j=0; j < dim; j++)
 			dist[i][j] = std::rand() % dim;
 
-	int* bestpath = simann(dist, dim);
-	int bestscore = get_score(bestpath, dist, dim);
-
-	std::cout << "best path: ";
-	std::copy(bestpath, bestpath+dim, std::ostream_iterator<int>(std::cout, " "));
-	std::cout << "\n";
-	std::cout << "best score: " << bestscore;
+	int* bestpath = simann(dist, dim, true);
+	std::cout << "\nResults:\n";
+	print_path(bestpath, dim, dist);
 
 	return 0;
 }
