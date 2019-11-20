@@ -14,28 +14,15 @@ int get_score(int* path, int** dist, int dim)
 	return score;
 }
 
-int main()
+int* simann(int** dist, int dim)
 {
-	std::cout << "Simulated Annealing\n\n";
-
-	// create path
-	int dim = 10;
-	int path[dim];
+	int* path = new int[dim];
 	std::iota(path, path+dim, 0);
 
 	// randomize initial values
 	std::random_device rd;
 	std::mt19937 g(rd());
 	std::shuffle(path, path+dim, g);
-
-	// distance matrix
-	int** dist = new int* [dim];
-	for (int i=0; i < dim; i++)
-		dist[i] = new int[dim];
-
-	for (int i=0; i < dim; i++)
-		for (int j=0; j < dim; j++)
-			dist[i][j] = std::rand() % dim;
 
 	int max_secs = 10, j = 0, T = 10;
 	int steps = dim*(dim-1);
@@ -94,10 +81,29 @@ int main()
 		T *= alpha;
 	}
 
-	std::cout << "final path: ";
-	std::copy(path, path+dim, std::ostream_iterator<int>(std::cout, " "));
+	return path;
+}
+
+int main()
+{
+	std::cout << "Simulated Annealing\n\n";
+
+	int dim = 10;
+	int** dist = new int* [dim];
+	for (int i=0; i < dim; i++)
+		dist[i] = new int[dim];
+
+	for (int i=0; i < dim; i++)
+		for (int j=0; j < dim; j++)
+			dist[i][j] = std::rand() % dim;
+
+	int* bestpath = simann(dist, dim);
+	int bestscore = get_score(bestpath, dist, dim);
+
+	std::cout << "best path: ";
+	std::copy(bestpath, bestpath+dim, std::ostream_iterator<int>(std::cout, " "));
 	std::cout << "\n";
-	std::cout << "final score: " << bestscore;
+	std::cout << "best score: " << bestscore;
 
 	return 0;
 }
