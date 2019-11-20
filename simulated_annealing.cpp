@@ -37,12 +37,13 @@ int main()
 		for (int j=0; j < dim; j++)
 			dist[i][j] = std::rand() % dim;
 
-	int max_iters = 5, score_iters = 3, max_secs = 60;
-	int i = 0, j = 0, T = 10;
+	int max_secs = 10, j = 0, T = 10;
+	int steps = dim*(dim-1);
 	int neighscore, idx1, idx2;
 	int priorscore = get_score(path, dist, dim);
+	int bestscore = priorscore;
 	double p, duration;
-	double a = 0.95;
+	double alpha = 0.95, beta = 5;
 	std::clock_t start;
 
 	std::cout << "initial path: ";
@@ -50,40 +51,54 @@ int main()
 	std::cout << "\n";
 	std::cout << "initial score: " << priorscore << "\n";
 
-	while (i < max_iters && j < score_iters)
+	while (true)
 	{
-		// terminate after max iterations or no score improvement
-		if (i >= max_iters || j >= score_iters)
-			break;
-
-		// terminate if timeout
+		// stopping conditions
+		// - no score improvement for beta T values
+		// - timeout
 		duration = (double) (std::clock()-start)/CLOCKS_PER_SEC;
-		if (duration > max_secs)
+		if (j >= beta || duration > max_secs)
 			break;
 
-		// random 2-exchange
-		idx1 = std::rand() % dim;
-		idx2 = std::rand() % dim;
-		std::swap(path[idx1], path[idx2]);
-
-		neighscore = get_score(path, dist, dim);
-		// metropolis condition
-		if (neighscore > priorscore)
+		/// perform dim*(dim-1) search steps for given T value
+		while (true)
 		{
-			p = exp((double)(priorscore-neighscore)/T);
-			if ((double) std::rand()/RAND_MAX < p)
-				std::swap(path[idx1], path[idx2]);
-			j++;
+			// stop after dim*(dim-1) steps
+			if (steps == 0)
+				break;
+
+			// random 2-exchange
+			idx1 = std::rand() % dim;
+			idx2 = std::rand() % dim;
+			std::swap(path[idx1], path[idx2]);
+
+			neighscore = get_score(path, dist, dim);
+			// metropolis condition
+			if (neighscore > priorscore)
+			{
+				p = exp((double)(priorscore-neighscore)/T);
+				if ((double) std::rand()/RAND_MAX < p)
+					std::swap(path[idx1], path[idx2]);
+				j++;
+			}
+			priorscore = neighscore;
+			steps--;
 		}
-		priorscore = neighscore;
-		i++;
-		T *= a;
+
+		// check for score improvement
+		if (priorscore < bestscore)
+			bestscore = priorscore;
+		else
+			j++;
+
+		// update T value
+		T *= alpha;
 	}
 
 	std::cout << "final path: ";
 	std::copy(path, path+dim, std::ostream_iterator<int>(std::cout, " "));
 	std::cout << "\n";
-	std::cout << "final score: " << priorscore;
+	std::cout << "final score: " << bestscore;
 
 	return 0;
 }
