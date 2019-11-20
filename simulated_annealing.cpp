@@ -4,6 +4,7 @@
 #include <random> // std::random_device, std::mt19937
 #include <algorithm> // std::shuffle
 #include <cmath> // exp
+#include <ctime> // std::clock
 
 int get_score(int* path, int** dist, int dim)
 {
@@ -36,21 +37,30 @@ int main()
 		for (int j=0; j < dim; j++)
 			dist[i][j] = std::rand() % dim;
 
-	int max_iters = 5;
-	int i = 0;
-	int priorscore = get_score(path, dist, dim);
-	int T = 10;
+	int max_iters = 5, score_iters = 3, max_secs = 60;
+	int i = 0, j = 0, T = 10;
 	int neighscore, idx1, idx2;
-	double p;
+	int priorscore = get_score(path, dist, dim);
+	double p, duration;
 	double a = 0.95;
+	std::clock_t start;
 
 	std::cout << "initial path: ";
 	std::copy(path, path+dim, std::ostream_iterator<int>(std::cout, " "));
 	std::cout << "\n";
 	std::cout << "initial score: " << priorscore << "\n";
 
-	while (i < max_iters)
+	while (i < max_iters && j < score_iters)
 	{
+		// terminate after max iterations or no score improvement
+		if (i >= max_iters || j >= score_iters)
+			break;
+
+		// terminate if timeout
+		duration = (double) (std::clock()-start)/CLOCKS_PER_SEC;
+		if (duration > max_secs)
+			break;
+
 		// random 2-exchange
 		idx1 = std::rand() % dim;
 		idx2 = std::rand() % dim;
@@ -63,6 +73,7 @@ int main()
 			p = exp((double)(priorscore-neighscore)/T);
 			if ((double) std::rand()/RAND_MAX < p)
 				std::swap(path[idx1], path[idx2]);
+			j++;
 		}
 		priorscore = neighscore;
 		i++;
