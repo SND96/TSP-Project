@@ -11,7 +11,7 @@ int main()
     string line;
     ifstream tsp_inp;
     tsp_inp.open("DATA/Atlanta.tsp");
-    int count_line = 0, dim = 0;
+    int count_line = 0, dim = 0, i;
     if (tsp_inp.is_open())
     {
         while (getline(tsp_inp,line) )
@@ -26,8 +26,10 @@ int main()
             }
         }
     }
-    double coord[dim][2];
-    int i=0;
+    double** coord = new double*[dim];
+    for(i = 0; i < dim; ++i)
+        coord[i] = new double[2];
+    i=0;
     if (tsp_inp.is_open())
     {
         while (getline(tsp_inp,line) )
