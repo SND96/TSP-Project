@@ -71,15 +71,14 @@ int main()
 			idx1 = std::rand() % dim;
 			idx2 = std::rand() % dim;
 			std::swap(path[idx1], path[idx2]);
-
 			neighscore = get_score(path, dist, dim);
+
 			// metropolis condition
 			if (neighscore > priorscore)
 			{
 				p = exp((double)(priorscore-neighscore)/T);
 				if ((double) std::rand()/RAND_MAX < p)
 					std::swap(path[idx1], path[idx2]);
-				j++;
 			}
 			priorscore = neighscore;
 			steps--;
@@ -91,7 +90,7 @@ int main()
 		else
 			j++;
 
-		// update T value
+		// geometric cooling
 		T *= alpha;
 	}
 
