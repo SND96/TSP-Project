@@ -6,21 +6,11 @@
 #include <cmath> // exp
 #include <ctime> // std::clock
 
-int get_score(int* path, int** dist, int dim)
-{
-	int score = 0;
-	for (int i=0; i < dim-1; i++)
-		score += dist[path[i]][path[i+1]];
-	return score;
-}
+// DECLARATIONS
+int* simann(int** dist, int dim, bool verbose);
+int get_score(int* path, int** dist, int dim);
+void print_path(int* path, int** dist, int dim);
 
-void print_path(int* path, int dim, int** dist)
-{
-	std::cout << "path: ";
-	std::copy(path, path+dim, std::ostream_iterator<int>(std::cout, " "));
-	std::cout << "\n";
-	std::cout << "score: " << get_score(path, dist, dim) << "\n";
-}
 
 int* simann(int** dist, int dim, bool verbose=false)
 {
@@ -46,7 +36,7 @@ int* simann(int** dist, int dim, bool verbose=false)
 
 	if (verbose)
 		std::cout << "Initial:\n";
-		print_path(bestpath, dim, dist);
+		print_path(bestpath, dist, dim);
 
 	while (true)
 	{
@@ -107,6 +97,22 @@ int* simann(int** dist, int dim, bool verbose=false)
 	return bestpath;
 }
 
+int get_score(int* path, int** dist, int dim)
+{
+	int score = 0;
+	for (int i=0; i < dim-1; i++)
+		score += dist[path[i]][path[i+1]];
+	return score;
+}
+
+void print_path(int* path, int** dist, int dim)
+{
+	std::cout << "path: ";
+	std::copy(path, path+dim, std::ostream_iterator<int>(std::cout, " "));
+	std::cout << "\n";
+	std::cout << "score: " << get_score(path, dist, dim) << "\n";
+}
+
 int main()
 {
 	std::cout << "Simulated Annealing\n\n";
@@ -122,7 +128,7 @@ int main()
 
 	int* bestpath = simann(dist, dim, true);
 	std::cout << "\nResults:\n";
-	print_path(bestpath, dim, dist);
+	print_path(bestpath, dist, dim);
 
 	return 0;
 }
