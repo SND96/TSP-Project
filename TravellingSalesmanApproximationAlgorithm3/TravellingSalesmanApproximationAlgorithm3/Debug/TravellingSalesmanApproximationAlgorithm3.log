@@ -1,4 +1,0 @@
-﻿  TravellingSalesmanApproximationAlgorithm3.cpp
-c:\users\sanme\documents\github\tsp-project\travellingsalesmanapproximationalgorithm3\travellingsalesmanapproximationalgorithm3\travellingsalesmanapproximationalgorithm3.cpp(31): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\sanme\documents\github\tsp-project\travellingsalesmanapproximationalgorithm3\travellingsalesmanapproximationalgorithm3\travellingsalesmanapproximationalgorithm3.cpp(166): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-  TravellingSalesmanApproximationAlgorithm3.vcxproj -> C:\Users\sanme\Documents\GitHub\TSP-Project\TravellingSalesmanApproximationAlgorithm3\Debug\TravellingSalesmanApproximationAlgorithm3.exe
