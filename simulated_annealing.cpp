@@ -7,12 +7,13 @@
 #include <ctime> // std::clock
 
 // DECLARATIONS
-int* simann(int** dist, int dim, bool verbose);
+int* simann(int** dist, int dim, bool verbose, size_t cutoff, double alpha, int beta, double T);
 int get_score(int* path, int** dist, int dim);
 void print_path(int* path, int** dist, int dim);
 
 
-int* simann(int** dist, int dim, bool verbose=false)
+int* simann(int** dist, int dim, bool verbose=false, size_t cutoff=10,
+		double alpha=0.95, int beta=5, double T=10)
 {
 	int path[dim];
 	std::iota(path, path+dim, 0);
@@ -25,26 +26,25 @@ int* simann(int** dist, int dim, bool verbose=false)
 	std::mt19937 g(rd());
 	std::shuffle(path, path+dim, g);
 
-	int max_secs = 10, j = 0, T = 10;
+	int j = 0;
 	int steps = dim*(dim-1);
 	int neighscore, idx1, idx2;
 	int priorscore = get_score(path, dist, dim);
 	int bestscore = priorscore;
 	double p, duration;
-	double alpha = 0.95, beta = 5;
-	std::clock_t start;
 
 	if (verbose)
 		std::cout << "Initial:\n";
 		print_path(bestpath, dist, dim);
 
+	std::clock_t start;
 	while (true)
 	{
 		// stopping conditions
 		// - no score improvement for beta T values
 		// - timeout
 		duration = (double) (std::clock()-start)/CLOCKS_PER_SEC;
-		if (j >= beta || duration > max_secs)
+		if (j >= beta || duration > cutoff)
 			break;
 
 		/// perform dim*(dim-1) search steps for given T value
@@ -115,8 +115,6 @@ void print_path(int* path, int** dist, int dim)
 
 int main()
 {
-	std::cout << "Simulated Annealing\n\n";
-
 	int dim = 10;
 	int** dist = new int* [dim];
 	for (int i=0; i < dim; i++)
