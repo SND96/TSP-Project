@@ -240,7 +240,7 @@ double ** readFile(int *dim, string file_name)
 int main()
 {
     int *dim;
-    string file_name = "DATA/Roanoke.tsp";
+    string file_name = "DATA/Philadelphia.tsp";
     // calling the function to find number of vertices and their coordinates
     double **coord = readFile(dim, file_name);
     
