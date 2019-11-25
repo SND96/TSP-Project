@@ -12,7 +12,7 @@
 #include <vector> // std::vector
 
 // DECLARATIONS
-int* simann(std::string input_fp, size_t cutoff, int seed, double alpha, int beta, double T);
+int* simann(std::string input_fp, size_t cutoff, int seed, double alpha, int beta, double T, int trial);
 float rounder(float val, int decis);
 int get_score(int* path, int** dist, int dim);
 void print_path(int* path, int** dist, int dim);
@@ -21,7 +21,8 @@ int** get_adj_matrix(std::string fp, int dim);
 void write_solution(std::string out_fp, int* path, size_t score, int dim);
 void write_trace(std::string out_fp, std::vector<float> trace_times, std::vector<size_t> trace_scores);
 
-int* simann(std::string input_fp, size_t cutoff=30, unsigned seed = 0, double alpha=0.95, int beta=10000, double T=10)
+int* simann(std::string input_fp, size_t cutoff=30, int seed = -1, double alpha=0.95, int beta=1000,
+		double T=10, int trial=0)
 {
 	int dim = get_dim(input_fp);
 	int** dist = get_adj_matrix(input_fp, dim);
@@ -33,8 +34,12 @@ int* simann(std::string input_fp, size_t cutoff=30, unsigned seed = 0, double al
 	std::copy(path, path+dim, bestpath);
 
 	// randomize initial values
-	std::srand(seed);
-	std::shuffle(path, path+dim, std::default_random_engine(seed));
+	if (seed != -1)
+	{
+		std::srand(seed);
+		std::shuffle(path, path+dim, std::default_random_engine(seed));
+	} else
+		std::shuffle(path, path+dim, std::default_random_engine(std::time(0)));
 
 	int j = 0;
 	int steps, neighscore, idx1, idx2;
@@ -43,10 +48,10 @@ int* simann(std::string input_fp, size_t cutoff=30, unsigned seed = 0, double al
 	double p;
 	double duration = 0;
 
-	std::cout << "Initial Path:\n";
+	std::cout << "\nInitial Path:\n";
 	print_path(bestpath, dist, dim);
 
-	std::clock_t start;
+	std::clock_t start = std::clock();
 	std::vector<float> trace_times;
 	std::vector<size_t> trace_scores;
 	while (true)
@@ -58,7 +63,8 @@ int* simann(std::string input_fp, size_t cutoff=30, unsigned seed = 0, double al
 		if (duration > cutoff-1)
 			break;
 
-		/// perform dim*(dim-1) search steps for given T value
+		// std::cout << "duration: " << duration << " cutoff: " << cutoff << "\n";
+		// perform dim*(dim-1) search steps for given T value
 		while (true)
 		{
 			// stop after dim*(dim-1) steps
@@ -119,6 +125,8 @@ int* simann(std::string input_fp, size_t cutoff=30, unsigned seed = 0, double al
 
 	// write trace to <instance>_<method>_<cutoff>[_<random_seed>].sol
 	output_fp.erase(output_fp.find_last_of("."), std::string::npos);
+	if (trial > 0)
+		output_fp += "_" + std::to_string(trial);
 	output_fp += ".trace";
 	write_trace(output_fp, trace_times, trace_scores);
 
@@ -247,6 +255,10 @@ void write_trace(std::string out_fp, std::vector<float> trace_times, std::vector
 int main()
 {
 	std::string input_fp = "DATA/Atlanta.tsp";
-	simann(input_fp, 3);
+	int cutoff = 3, seed = -1, beta = 1000, trial_count = 3;
+	double alpha = 0.95, T = 10.0;
+	for (int i=0; i < trial_count; i++)
+		simann(input_fp, cutoff, seed, alpha, beta, T, i+1);
+
 	return 0;
 }
