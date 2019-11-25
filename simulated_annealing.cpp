@@ -1,20 +1,32 @@
+// Simulated Annealing algorithm implementation
 #include <iostream> //std::cout
 #include <iterator> // std::ostream_iterator
 #include <numeric> // std::iota
 #include <random> // std::random_device, std::mt19937
 #include <algorithm> // std::shuffle
-#include <cmath> // exp
+#include <cmath> // exp, pow
 #include <ctime> // std::clock
+#include <string> // std::string
+#include <fstream> // std::fstream
+#include <sstream> // std::istringstream
+#include <vector> // std::vector
 
 // DECLARATIONS
-int* simann(int** dist, int dim, bool verbose, size_t cutoff, double alpha, int beta, double T);
+int* simann(std::string input_fp, size_t cutoff, int seed, double alpha, int beta, double T, int trial);
+float rounder(float val, int decis);
 int get_score(int* path, int** dist, int dim);
 void print_path(int* path, int** dist, int dim);
+int get_dim(std::string fp);
+int** get_adj_matrix(std::string fp, int dim);
+void write_solution(std::string out_fp, int* path, size_t score, int dim);
+void write_trace(std::string out_fp, std::vector<float> trace_times, std::vector<size_t> trace_scores);
 
-
-int* simann(int** dist, int dim, bool verbose=false, size_t cutoff=10,
-		double alpha=0.95, int beta=5, double T=10)
+int* simann(std::string input_fp, size_t cutoff=30, int seed = -1, double alpha=0.95, int beta=1000,
+		double T=10, int trial=0)
 {
+	int dim = get_dim(input_fp);
+	int** dist = get_adj_matrix(input_fp, dim);
+
 	int path[dim];
 	std::iota(path, path+dim, 0);
 
@@ -22,32 +34,37 @@ int* simann(int** dist, int dim, bool verbose=false, size_t cutoff=10,
 	std::copy(path, path+dim, bestpath);
 
 	// randomize initial values
-	std::random_device rd;
-	std::mt19937 g(rd());
-	std::shuffle(path, path+dim, g);
+	if (seed != -1)
+	{
+		std::srand(seed);
+		std::shuffle(path, path+dim, std::default_random_engine(seed));
+	} else
+		std::shuffle(path, path+dim, std::default_random_engine(std::time(0)));
 
 	int j = 0;
-	int steps = dim*(dim-1);
-	int neighscore, idx1, idx2;
+	int steps, neighscore, idx1, idx2;
 	int priorscore = get_score(path, dist, dim);
 	int bestscore = priorscore;
-	double p, duration;
+	double p;
+	double duration = 0;
 
-	if (verbose)
-		std::cout << "Initial:\n";
-		print_path(bestpath, dist, dim);
+	std::cout << "\nInitial Path:\n";
+	print_path(bestpath, dist, dim);
 
-	std::clock_t start;
+	std::clock_t start = std::clock();
+	std::vector<float> trace_times;
+	std::vector<size_t> trace_scores;
 	while (true)
 	{
+		steps = dim*(dim-1);
 		// stopping conditions
 		// - no score improvement for beta T values
 		// - timeout
-		duration = (double) (std::clock()-start)/CLOCKS_PER_SEC;
-		if (j >= beta || duration > cutoff)
+		if (duration > cutoff-1)
 			break;
 
-		/// perform dim*(dim-1) search steps for given T value
+		// std::cout << "duration: " << duration << " cutoff: " << cutoff << "\n";
+		// perform dim*(dim-1) search steps for given T value
 		while (true)
 		{
 			// stop after dim*(dim-1) steps
@@ -78,10 +95,13 @@ int* simann(int** dist, int dim, bool verbose=false, size_t cutoff=10,
 		}
 
 		// check and reflect any score improvement
+		duration = (double) (std::clock()-start)/CLOCKS_PER_SEC;
 		if (priorscore < bestscore)
 		{
 			bestscore = priorscore;
 			std::copy(path, path+dim, bestpath);
+			trace_times.push_back(rounder(duration, 2));
+			trace_scores.push_back(bestscore);
 		}
 		else
 		{
@@ -94,7 +114,29 @@ int* simann(int** dist, int dim, bool verbose=false, size_t cutoff=10,
 		T *= alpha;
 	}
 
+	std::cout << "\nBest Path:\n";
+	print_path(bestpath, dist, dim);
+
+	// write solution to <instance>_<method>_<cutoff>[_<random_seed>].sol
+	std::string output_fp = input_fp;
+	output_fp.erase(output_fp.find_last_of("."), std::string::npos);
+	output_fp += "_LS1_" + std::to_string(cutoff) + "_" + std::to_string(seed) + ".sol";
+	write_solution(output_fp, bestpath, bestscore, dim);
+
+	// write trace to <instance>_<method>_<cutoff>[_<random_seed>].sol
+	output_fp.erase(output_fp.find_last_of("."), std::string::npos);
+	if (trial > 0)
+		output_fp += "_" + std::to_string(trial);
+	output_fp += ".trace";
+	write_trace(output_fp, trace_times, trace_scores);
+
 	return bestpath;
+}
+
+float rounder(float val, int decis)
+{
+	int tmp = (int)(val*pow(10, decis)+0.5);
+	return (float)tmp/pow(10, decis);
 }
 
 int get_score(int* path, int** dist, int dim)
@@ -113,20 +155,110 @@ void print_path(int* path, int** dist, int dim)
 	std::cout << "score: " << get_score(path, dist, dim) << "\n";
 }
 
+int get_dim(std::string fp)
+{
+	std::string line;
+	std::ifstream tsp_inp;
+	tsp_inp.open(fp);
+	int count_line = 0, dim;
+	if (tsp_inp.is_open())
+	{
+		while (std::getline(tsp_inp, line))
+		{
+			count_line += 1;
+			if (count_line == 3)
+			{
+				std::istringstream iss(line);
+				std::string s;
+				if (iss >> s >> dim)
+					break;
+			}
+		}
+	}
+
+	return dim;
+}
+
+int** get_adj_matrix(std::string fp, int dim)
+{
+	std::string line;
+	std::ifstream tsp_inp;
+	tsp_inp.open(fp);
+	int count_line = 0, i;
+
+	double** coord = new double*[dim];
+	for (i=0; i < dim; i++)
+		coord[i] = new double[2];
+	i = 0;
+	if (tsp_inp.is_open())
+	{
+		while (std::getline(tsp_inp, line))
+		{
+			count_line += 1;
+			if ((count_line >= 6) && (count_line < (dim+6)))
+			{
+				std::istringstream iss(line);
+				int a;
+				double b, c;
+				if (iss >> a >> b >> c)
+				{
+					coord[i][0] = b;
+					coord[i][1] = c;
+					i++;
+				}
+			}
+		}
+	}
+
+	tsp_inp.close();
+
+	int** adj = new int*[dim];
+	for (i=0; i < dim; ++i)
+		adj[i] = new int[dim];
+
+	for (i = 0; i < dim; i++)
+		for (int j=0; j <= i; j++)
+		{
+			if (i == j)
+				adj[i][j] = 0;
+			else
+				adj[j][i] = adj[i][j] = std::round(std::sqrt((coord[i][0]-coord[j][0])*(coord[i][0]-coord[j][0])+(coord[i][1]-coord[j][1])*(coord[i][1]-coord[j][1])));
+		}
+
+	return adj;
+}
+
+void write_solution(std::string out_fp, int* path, size_t score, int dim)
+{
+	std::ofstream out_file(out_fp);
+	out_file << score << "\n";
+
+	for (size_t i=0; i < dim; i++)
+	{
+		out_file << path[i];
+		if (i < dim-1)
+			out_file << ",";
+	}
+}
+
+void write_trace(std::string out_fp, std::vector<float> trace_times, std::vector<size_t> trace_scores)
+{
+	std::ofstream out_file(out_fp);
+	for (size_t i=0; i<trace_times.size(); i++)
+	{
+		out_file << trace_times[i] << ", " << trace_scores[i];
+		if (i != trace_times.size())
+			out_file << "\n";
+	}
+}
+
 int main()
 {
-	int dim = 10;
-	int** dist = new int* [dim];
-	for (int i=0; i < dim; i++)
-		dist[i] = new int[dim];
-
-	for (int i=0; i < dim; i++)
-		for (int j=0; j < dim; j++)
-			dist[i][j] = std::rand() % dim;
-
-	int* bestpath = simann(dist, dim, true);
-	std::cout << "\nResults:\n";
-	print_path(bestpath, dist, dim);
+	std::string input_fp = "DATA/Atlanta.tsp";
+	int cutoff = 3, seed = -1, beta = 1000, trial_count = 3;
+	double alpha = 0.95, T = 10.0;
+	for (int i=0; i < trial_count; i++)
+		simann(input_fp, cutoff, seed, alpha, beta, T, i+1);
 
 	return 0;
 }

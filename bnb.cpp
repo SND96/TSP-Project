@@ -261,6 +261,7 @@ int main()
     string inputFilePath = "DATA/Atlanta.tsp";
     string traceFilePath = "Atlanta.trace";
     string solFilePath = "Atlanta.sol";
+    
     // calling the function to find number of vertices
     int V = getDim(inputFilePath);
     
