@@ -26,7 +26,7 @@ struct SAParams {
 	size_t cutoff = 30;
 	int seed = -1;
 	double alpha = 0.95;
-	double T = 10;
+	double T = 1000;
 };
 
 struct Trial {
@@ -215,6 +215,7 @@ void simann(Trial &trial)
 
 	if (trial.verbose)
 	{
+		std::cout << "\nEnding T Value:" << T << "\n";
 		std::cout << "\nBest Path:\n";
 		print_path(trial.bestpath, dist);
 	}
@@ -319,18 +320,18 @@ int** get_adj_matrix(std::string fp, int dim)
 int main()
 {
 	SAParams sap;
-	sap.cutoff = 60;
+	sap.cutoff = 30;
 	int trial_count = 10;
 	for (int i=0; i < trial_count; i++)
 	{
 		Trial trial;
 		trial.id = i+1;
-		trial.input_fp = "DATA/Atlanta.tsp";
+		trial.input_fp = "DATA/Cincinnati.tsp";
 		trial.sap = sap;
 		trial.verbose = true;
 		trial.output_dir = "tmp";
 		simann(trial);
-		trial.write_solution();
+		// trial.write_solution();
 		trial.write_trace();
 	}
 

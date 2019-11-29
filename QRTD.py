@@ -9,7 +9,7 @@ class QRTD(Plotter):
     def __init__(self, outdir, solpath="DATA/solutions.csv", xcnt=100,
                  line_alpha=0.7, line_width=1.2, tick_color='0.25', bgc='0.90',
                  fc='0.60', title_color='0.15', xfmt='{x:,.2f}',
-                 yfmt='{x:,.0f}', grid_style=None):
+                 yfmt='{x:,.1f}', grid_style='dotted'):
         # get trace files from given output directory
         trace_paths = [f for f in listdir(outdir) if isfile(join(outdir, f))]
         if len(trace_paths) == 0:
@@ -54,10 +54,11 @@ class QRTD(Plotter):
         # return optimal value of location
         return self._df_opt.Value.values[0]
 
-    def plot_qrtd(self, sq_cuts=np.array([0.3, 0.4, 0.5, 0.6]),
+    def plot_qrtd(self, sq_cuts=np.array([0.02, 0.04, 0.06, 0.08]),
                   should_show=True, should_save=False, save_path=None,
                   labels=None, xax_label='run-time (CPU sec)',
-                  yax_label='P(solve)', colors=None, title=None):
+                  yax_label='P(solve)', colors=['b', 'g', 'r', 'c'],
+                  title=None):
         x = np.sort(self.df_trials.RT.unique())
         X = np.array([x.copy() for _ in range(sq_cuts.shape[0])])
         Y = np.zeros((sq_cuts.shape[0], X.shape[1]))
@@ -70,7 +71,7 @@ class QRTD(Plotter):
 
         if should_show or should_save:
             if labels is None:
-                labels = [f'{sq}%' for sq in sq_cuts]
+                labels = [f'{sq*100}%' for sq in sq_cuts]
 
             if title is None:
                 title = f'Qualified RTD ({self.target_loc})'

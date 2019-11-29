@@ -23,7 +23,7 @@ class Plotter:
 
     def plot(self, X, Y, labels=None, xax_label=None, yax_label=None,
              colors=None, title=None, should_show=False, should_save=False,
-             save_path=None):
+             save_path=None, xscale='log'):
 
         if labels is None:
             labels = [f'plot {i+1}' for i in range(Y.shape[0])]
@@ -49,7 +49,13 @@ class Plotter:
         if yax_label:
             ax.set_ylabel(yax_label, color=self.tick_color)
 
-        # ax.xaxis.set_major_locator(LinearLocator(self.xtickcnt))
+        # set x-axis scale
+        ax.set_xscale(xscale)
+
+        # remove minor ticks for log scale
+        if xscale == 'log':
+            plt.minorticks_off()
+
         ax.xaxis.set_major_formatter(self.xfmt)
         ax.yaxis.set_major_formatter(self.yfmt)
 
