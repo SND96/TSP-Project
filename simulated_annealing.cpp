@@ -26,7 +26,7 @@ struct SAParams {
 	size_t cutoff = 30;
 	int seed = -1;
 	double alpha = 0.95;
-	double T = 1000;
+	double T = 10000;
 };
 
 struct Trial {
@@ -233,6 +233,7 @@ int get_score(std::vector<int> &path, int** dist)
 	int score = 0;
 	for (int i=0; i < dim-1; i++)
 		score += dist[path[i]][path[i+1]];
+	score += dist[path[0]][path[dim-1]];
 	return score;
 }
 
