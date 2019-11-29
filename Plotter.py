@@ -21,6 +21,32 @@ class Plotter:
         self.xtickcnt = xtickcnt
         self._cmap = cm.get_cmap('cividis')
 
+    def boxplot(self, X, yax_label=None, title=None, should_show=False,
+                should_save=False, save_path=None):
+        fig, ax = plt.subplots()
+        ax.boxplot(X)
+
+        if title:
+            ax.set_title(title)
+
+        if yax_label:
+            ax.set_ylabel(yax_label, color=self.tick_color)
+
+        ax.yaxis.set_major_formatter(self.yfmt)
+        ax.tick_params(colors=self.tick_color)
+        ax.tick_params(axis='x', which='both', bottom=False,
+                       top=False, labelbottom=False)
+        ax.set_facecolor(self.bgc)
+        plt.setp(ax.spines.values(), color=self.fc)
+
+        if should_save:
+            plt.savefig(save_path, bbox_inches='tight')
+
+        if should_show:
+            plt.show()
+
+        plt.clf()
+
     def plot(self, X, Y, labels=None, xax_label=None, yax_label=None,
              colors=None, title=None, should_show=False, should_save=False,
              save_path=None, xscale='log'):
