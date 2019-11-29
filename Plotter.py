@@ -7,7 +7,7 @@ from matplotlib import cm
 class Plotter:
     def __init__(self, line_alpha=0.7, line_width=1.2, tick_color='0.25',
                  bgc='0.90', fc='0.60', title_color='0.15',
-                 xfmt='{x:,.2f}', yfmt='{x:,.0f}', grid_style=None,
+                 xfmt='{x:,.2f}', yfmt='{x:,.1f}', grid_style=None,
                  xtickcnt=7):
         self.line_alpha = line_alpha
         self.line_width = line_width

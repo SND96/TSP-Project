@@ -319,8 +319,8 @@ int** get_adj_matrix(std::string fp, int dim)
 int main()
 {
 	SAParams sap;
-	sap.cutoff = 3;
-	int trial_count = 3;
+	sap.cutoff = 60;
+	int trial_count = 10;
 	for (int i=0; i < trial_count; i++)
 	{
 		Trial trial;
@@ -328,6 +328,7 @@ int main()
 		trial.input_fp = "DATA/Atlanta.tsp";
 		trial.sap = sap;
 		trial.verbose = true;
+		trial.output_dir = "tmp";
 		simann(trial);
 		trial.write_solution();
 		trial.write_trace();
