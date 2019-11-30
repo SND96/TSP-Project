@@ -126,13 +126,37 @@ class QRTD(Plotter):
                       save_path=save_path)
 
 if __name__ == '__main__':
-    #branch and bound table
+    #search for path 
+
+    
     #load from the results folder, all the solution files with .trace (this is the only one
     #with execution times in it
     import glob, os
     os.chdir("output")
-    for file in glob.glob("*.trace"):
-        print(file)
+    files =  glob.glob("*.trace")
+    #LS1
+    #find all directories for LS1
+    ls1Files = [s for s in files if "LS1" in s]
+    ls1Tb1 = [] #format is instance, time, solution qual, and relError
+    #loop through all files with LS1
+    cities = ["Atlanta", "Berlin", "Boston", "Champaign", "Cincinnati", "Denver", "NYC", "Philadelphia", "Roanoke", "SanFrancisco", "Toronto", "UKansasState", "UMissouri"]
+    for file in ls1Files:
+        #loop through all files with a particular city
+            for city in cities:
+                cityFiles = [s for s in ls1Files if city in s]
+                f = open(file, "r")
+                lineList = f.readlines()
+                lastLine = lineList[len(lineList)-1]
+                time = float(lastLine.split(', ')[0])
+                qual = float(lastLine.split(', ')[1])
+        f = open(file, "r")
+        lineList = f.readlines()
+        lastLine = lineList[len(lineList)-1]
+        instance = txt.split('_')[0]
+        ls1Tbl.append([]) 
+    
+    
         #for each solution file, append to list the solution quality,
         #the time, and relative error
+        
     #save the list s a csv using np.savetxt
