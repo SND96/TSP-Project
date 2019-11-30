@@ -26,7 +26,8 @@ struct SAParams {
 	size_t cutoff = 30;
 	int seed = -1;
 	double alpha = 0.95;
-	double T = 10000;
+	double T = 100;
+	bool randinit = false;
 };
 
 struct Trial {
@@ -121,6 +122,33 @@ void print_path(std::vector<int> &path, int** dist);
 int get_dim(std::string fp);
 int** get_adj_matrix(std::string fp, int dim);
 
+void init_sa(std::vector<int> &path, int** dist, int dim)
+{
+	// naive nearest neighbor
+	for (int i=0; i < dim; i++)
+		path[i] = 0;
+
+	for (int i=0; i < dim-1; i++)
+	{
+		int start_idx = path[i];
+		int minval = RAND_MAX;
+		for (int j=0; j < dim; j++)
+		{
+			// j not in path yet
+			if (std::find(path.begin(), path.end(), j) == path.end())
+			{
+				// cost of j lower
+				int cost = dist[start_idx][j];
+				if (cost <= minval)
+				{
+					minval = cost;
+					path[i+1] = j;
+				}
+			}
+		}
+	}
+}
+
 void simann(Trial &trial)
 {
 	int dim = get_dim(trial.input_fp);
@@ -128,25 +156,27 @@ void simann(Trial &trial)
 	SAParams sap = trial.sap;
 
 	std::vector<int> path(dim);
-	std::iota(path.begin(), path.end(), 0);
+	init_sa(path, dist, dim);
 	trial.bestpath = path;
 
-	// randomize initial values
-	if (sap.seed != -1)
-	{
-		std::srand(sap.seed);
-		std::shuffle(path.begin(), path.end(), std::default_random_engine(sap.seed));
-	} else
-		std::shuffle(path.begin(), path.end(), std::default_random_engine(std::time(0)));
+	// optionally randomize initial values
+	if (sap.randinit)
+		if (sap.seed != -1)
+		{
+			std::srand(sap.seed);
+			std::shuffle(path.begin(), path.end(), std::default_random_engine(sap.seed));
+		} else
+			std::shuffle(path.begin(), path.end(), std::default_random_engine(std::time(0)));
 
 	int j = 0;
-	int steps, neighscore, idx1, idx2;
+	int steps, neighscore, idx1, idx2, idx3;
 	int priorscore = get_score(path, dist);
 	trial.bestscore = priorscore;
 	double p;
 	double duration = 0;
 	double T = sap.T, alpha = sap.alpha;
 
+	T = priorscore;
 	if (trial.verbose)
 	{
 		std::cout << "\nInitial Path:\n";
@@ -170,23 +200,35 @@ void simann(Trial &trial)
 			if (steps == 0)
 				break;
 
-			// random 2-exchange
+			// random 3-exchange
 			idx1 = std::rand() % dim;
 			idx2 = std::rand() % dim;
+			idx3 = std::rand() % dim;
 			std::swap(path[idx1], path[idx2]);
+			std::swap(path[idx1], path[idx3]);
 			neighscore = get_score(path, dist);
 
 			// metropolis condition
 			if (neighscore > priorscore)
 			{
 				p = exp((double)(priorscore-neighscore)/T);
-				if ((double) std::rand()/RAND_MAX < p)
+				// double r = (double) std::rand()/RAND_MAX;
+				// replace with probability p
+				if ((double) std::rand()/RAND_MAX > p)
+				{
+					// REJECT
+					std::swap(path[idx1], path[idx3]);
 					std::swap(path[idx1], path[idx2]);
+				}
 				else
+				{
+					// ACCEPT
 					priorscore = neighscore;
+				}
 			}
 			else
 			{
+				// ACCEPT
 				priorscore = neighscore;
 			}
 
@@ -321,18 +363,20 @@ int** get_adj_matrix(std::string fp, int dim)
 int main()
 {
 	SAParams sap;
-	sap.cutoff = 30;
-	int trial_count = 10;
+	sap.cutoff = 10;
+	sap.seed = 1;
+	sap.alpha = 0.9;
+	int trial_count = 1;
 	for (int i=0; i < trial_count; i++)
 	{
 		Trial trial;
 		trial.id = i+1;
-		trial.input_fp = "DATA/Cincinnati.tsp";
+		trial.input_fp = "DATA/Atlanta.tsp";
 		trial.sap = sap;
 		trial.verbose = true;
 		trial.output_dir = "tmp";
 		simann(trial);
-		// trial.write_solution();
+		trial.write_solution();
 		trial.write_trace();
 	}
 
