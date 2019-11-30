@@ -31,7 +31,6 @@ struct SAParams {
 };
 
 struct Trial {
-	int id = 0;
 	std::string input_fp;
 	std::string output_dir = "output";
 	std::vector<float> times;
@@ -58,7 +57,7 @@ struct Trial {
 
 	std::string get_output_path(std::string suffix)
 	{
-		// write solution to <instance>_<method>_<cutoff>[_<random_seed>][_<trial>].<suffix>
+		// write solution to <instance>_<method>_<cutoff>[_<random_seed>].<suffix>
 		std::string output_fp = "";
 
 		// idempotentally create dir and add to output filepath
@@ -73,10 +72,7 @@ struct Trial {
 		output_fp += filename_to_loc(input_fp) + "_LS1_" + std::to_string(sap.cutoff);
 
 		if (sap.seed != -1)
-			output_fp += std::to_string(sap.seed);
-
-		if (suffix == "trace")
-			output_fp += "_" + std::to_string(id);
+			output_fp += "_" + std::to_string(sap.seed);
 
 		output_fp += "." + suffix;
 		return output_fp;
@@ -108,7 +104,7 @@ struct Trial {
 		std::ofstream out_file(output_fp);
 		for (size_t i=0; i < times.size(); i++)
 		{
-			out_file << times[i] << ", " << scores[i];
+			out_file << times[i] << "," << scores[i];
 			if (i != times.size())
 				out_file << "\n";
 		}
@@ -174,9 +170,8 @@ void simann(Trial &trial)
 	trial.bestscore = priorscore;
 	double p;
 	double duration = 0;
-	double T = sap.T, alpha = sap.alpha;
+	double T = priorscore, alpha = sap.alpha;
 
-	T = priorscore;
 	if (trial.verbose)
 	{
 		std::cout << "\nInitial Path:\n";
@@ -364,15 +359,14 @@ int main()
 {
 	SAParams sap;
 	sap.cutoff = 10;
-	sap.seed = 1;
 	sap.alpha = 0.9;
 	int trial_count = 1;
 	for (int i=0; i < trial_count; i++)
 	{
 		Trial trial;
-		trial.id = i+1;
-		trial.input_fp = "DATA/Atlanta.tsp";
+		sap.seed = i+1;
 		trial.sap = sap;
+		trial.input_fp = "DATA/Atlanta.tsp";
 		trial.verbose = true;
 		trial.output_dir = "tmp";
 		simann(trial);
