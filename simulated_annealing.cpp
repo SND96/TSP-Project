@@ -252,7 +252,6 @@ void simann(Trial &trial)
 
 	if (trial.verbose)
 	{
-		std::cout << "\nEnding T Value:" << T << "\n";
 		std::cout << "\nBest Path:\n";
 		print_path(trial.bestpath, dist);
 	}
@@ -358,15 +357,15 @@ int** get_adj_matrix(std::string fp, int dim)
 int main()
 {
 	SAParams sap;
-	sap.cutoff = 10;
-	sap.alpha = 0.9;
-	int trial_count = 1;
+	sap.cutoff = 5;
+	sap.alpha = 0.95;
+	int trial_count = 10;
 	for (int i=0; i < trial_count; i++)
 	{
 		Trial trial;
 		sap.seed = i+1;
 		trial.sap = sap;
-		trial.input_fp = "DATA/Atlanta.tsp";
+		trial.input_fp = "DATA/NYC.tsp";
 		trial.verbose = true;
 		trial.output_dir = "tmp";
 		simann(trial);
