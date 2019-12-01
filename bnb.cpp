@@ -13,7 +13,7 @@
 using namespace std;
 
 // function to write new improved solutions when found
-void writeToOutputFile(string traceFileName, string solFileName, int bestWeight, chrono::high_resolution_clock::time_point startTime, int curr_path[], int dim)
+void writeToOutputFile(string traceFileName, string solFileName, int bestWeight, chrono::high_resolution_clock::time_point startTime, int curr_path[], int dim, int cutoff)
 {
     ofstream tracefile;
     ofstream solfile;
@@ -27,6 +27,14 @@ void writeToOutputFile(string traceFileName, string solFileName, int bestWeight,
 
     // find time difference in seconds to measure execution time rounded to 2 decimal places
     float diff = round((chrono::duration_cast<chrono::microseconds>(currTime - startTime).count())/10000.0)/100.0;
+
+    // check if cutoff time exceeded
+    if(diff>=cutoff)
+    {
+        solfile.close();
+        tracefile.close();
+        exit(0);
+    }
 
     // write results to output files
     tracefile<<diff<<", "<<bestWeight<<"\n";
@@ -99,20 +107,27 @@ class TSP_BNB
     // curr_weight-> weight of the path so far 
     // level-> current level in the tree
     // curr_path[] -> current solution so far 
-    void BNBRecursive(int** adj, int curr_bound, int curr_weight, int level, int curr_path[], int *final_res, bool *visited, int *final_path, chrono::high_resolution_clock::time_point startTime, string traceFilePath, string solFilePath) 
+    void BNBRecursive(int** adj, int curr_bound, int curr_weight, int level, int curr_path[], int *final_res, bool *visited, int *final_path, chrono::high_resolution_clock::time_point startTime, string traceFilePath, string solFilePath, int cutoff) 
     { 
+        // check if cutoff time reached
+        int elapsed = (chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now() - startTime).count())/1000000.0;
+        if (elapsed>=cutoff)
+        {
+            exit(0);
+        }
+
         // case when we have covered all the nodes once
         if (level==N) 
         {               
             // curr_res is the weight of the solution so far
             int curr_res = curr_weight + adj[curr_path[level-1]][curr_path[0]]; 
   
-            //if current result is better, update final_res and final_path
+            // if current result is better, update final_res and final_path
             if (curr_res < *final_res) 
             { 
                 copyToFinal(curr_path, final_path); 
                 *final_res = curr_res; 
-                writeToOutputFile(traceFilePath, solFilePath, curr_res, startTime, curr_path, N);
+                writeToOutputFile(traceFilePath, solFilePath, curr_res, startTime, curr_path, N, cutoff);
             }                
             return; 
         } 
@@ -141,7 +156,7 @@ class TSP_BNB
                     visited[i] = true; 
       
                     // call BNBRecursive for the next level 
-                    BNBRecursive(adj, curr_bound, curr_weight, level+1, curr_path, final_res, visited, final_path, startTime, traceFilePath, solFilePath); 
+                    BNBRecursive(adj, curr_bound, curr_weight, level+1, curr_path, final_res, visited, final_path, startTime, traceFilePath, solFilePath, cutoff); 
                 } 
       
                 // else we prune the node by resetting all changes
@@ -156,7 +171,7 @@ class TSP_BNB
     } 
       
     // set first node as root, initialise curr_path, find initial bound and call the recursive fn 
-    void BNB(int** adj, int *final_res, bool *visited, int *final_path, chrono::high_resolution_clock::time_point startTime, string traceFilePath, string solFilePath) 
+    void BNB(int** adj, int *final_res, bool *visited, int *final_path, chrono::high_resolution_clock::time_point startTime, string traceFilePath, string solFilePath, int cutoff) 
     {   
         int curr_path[N+1]; 
       
@@ -178,7 +193,7 @@ class TSP_BNB
         curr_path[0] = 0; 
       
         // call the BNB recursive function
-        BNBRecursive(adj, curr_bound, 0, 1, curr_path, final_res, visited, final_path, startTime, traceFilePath, solFilePath); 
+        BNBRecursive(adj, curr_bound, 0, 1, curr_path, final_res, visited, final_path, startTime, traceFilePath, solFilePath, cutoff); 
     } 
 };
 
@@ -254,23 +269,35 @@ int** getAdjMatrix(string filePath, int dim)
     return adj;
 }
 
-int main()
+int main(int argc, char**argv)
 {
+    // read command line arguments
+    string filePath = argv[2];
+    int cutoff = atoi(argv[6]);
+    cout<<cutoff;
+    string method = argv[4];
+    int seed;
+    if( argc == 9 )
+        seed = atoi(argv[8]);
+
     // making note of start time of execution
     chrono::high_resolution_clock::time_point startTime = chrono::high_resolution_clock::now();
-    string inputFilePath = "DATA/Atlanta.tsp";
-    string traceFilePath = "Atlanta.trace";
-    string solFilePath = "Atlanta.sol";
-    
+
+    // find file paths
+    string inputFilePath = "DATA/" + filePath;
+    string instance = filePath.substr(0, filePath.size()-4);
+    string traceFilePath = instance + ".trace";
+    string solFilePath = instance + ".sol";
+
     // calling the function to find number of vertices
     int V = getDim(inputFilePath);
     
     // calling function to find coordinates of vertices and adjacency matrix
     int **adj = getAdjMatrix(inputFilePath, V);
 
-    //calling BNB
+    // calling BNB
     TSP_BNB obj(V);
-    obj.BNB(adj, &obj.final_res, obj.visited, obj.final_path, startTime, traceFilePath, solFilePath); 
+    obj.BNB(adj, &obj.final_res, obj.visited, obj.final_path, startTime, traceFilePath, solFilePath, cutoff); 
 
     printf("Minimum cost : %d\n", obj.final_res); 
     printf("Path Taken : "); 
@@ -278,6 +305,6 @@ int main()
         printf("%d ", obj.final_path[i]); 
     chrono::high_resolution_clock::time_point currTime = chrono::high_resolution_clock::now();
     float diff = (chrono::duration_cast<chrono::microseconds>(currTime-startTime).count())/1000000.0;
-    cout<<diff;
+    cout<<"\nTime taken in seconds:"<<diff;
     return 0;
 }
