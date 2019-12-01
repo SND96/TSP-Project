@@ -7,7 +7,7 @@ from matplotlib import cm
 class Plotter:
     def __init__(self, line_alpha=0.7, line_width=1.2, tick_color='0.25',
                  bgc='0.90', fc='0.60', title_color='0.15',
-                 xfmt='{x:,.2f}', yfmt='{x:,.0f}', grid_style=None,
+                 xfmt='{x:,.2f}', yfmt='{x:,.1f}', grid_style=None,
                  xtickcnt=7):
         self.line_alpha = line_alpha
         self.line_width = line_width
@@ -21,9 +21,35 @@ class Plotter:
         self.xtickcnt = xtickcnt
         self._cmap = cm.get_cmap('cividis')
 
+    def boxplot(self, X, yax_label=None, title=None, should_show=False,
+                should_save=False, save_path=None):
+        fig, ax = plt.subplots()
+        ax.boxplot(X)
+
+        if title:
+            ax.set_title(title)
+
+        if yax_label:
+            ax.set_ylabel(yax_label, color=self.tick_color)
+
+        ax.yaxis.set_major_formatter(self.yfmt)
+        ax.tick_params(colors=self.tick_color)
+        ax.tick_params(axis='x', which='both', bottom=False,
+                       top=False, labelbottom=False)
+        ax.set_facecolor(self.bgc)
+        plt.setp(ax.spines.values(), color=self.fc)
+
+        if should_save:
+            plt.savefig(save_path, bbox_inches='tight')
+
+        if should_show:
+            plt.show()
+
+        plt.clf()
+
     def plot(self, X, Y, labels=None, xax_label=None, yax_label=None,
              colors=None, title=None, should_show=False, should_save=False,
-             save_path=None):
+             save_path=None, xscale='log'):
 
         if labels is None:
             labels = [f'plot {i+1}' for i in range(Y.shape[0])]
@@ -49,7 +75,13 @@ class Plotter:
         if yax_label:
             ax.set_ylabel(yax_label, color=self.tick_color)
 
-        # ax.xaxis.set_major_locator(LinearLocator(self.xtickcnt))
+        # set x-axis scale
+        ax.set_xscale(xscale)
+
+        # remove minor ticks for log scale
+        if xscale == 'log':
+            plt.minorticks_off()
+
         ax.xaxis.set_major_formatter(self.xfmt)
         ax.yaxis.set_major_formatter(self.yfmt)
 
