@@ -1,3 +1,8 @@
 DATA
 a.out
+sa.o*
+output
 .vscode
+Untitled.ipynb
+.ipynb_checkpoints
+__pycache__

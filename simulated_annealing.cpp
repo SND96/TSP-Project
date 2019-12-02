@@ -1,76 +1,229 @@
+// Simulated Annealing algorithm implementation
 #include <iostream> //std::cout
 #include <iterator> // std::ostream_iterator
 #include <numeric> // std::iota
 #include <random> // std::random_device, std::mt19937
 #include <algorithm> // std::shuffle
-#include <cmath> // exp
+#include <cmath> // exp, pow
 #include <ctime> // std::clock
+#include <string> // std::string
+#include <fstream> // std::fstream
+#include <sstream> // std::istringstream
+#include <vector> // std::vector
+#include <experimental/filesystem> // fs::create_directory, fs::exists
+
+namespace fs = std::experimental::filesystem;
+
+// path separator for windows os
+#if defined(_WIN16) | defined(_WIN32) | defined(_WIN64)
+#define SEP "\\"
+#else
+#define SEP "/"
+#endif
 
 // DECLARATIONS
-int* simann(int** dist, int dim, bool verbose, size_t cutoff, double alpha, int beta, double T);
-int get_score(int* path, int** dist, int dim);
-void print_path(int* path, int** dist, int dim);
+struct SAParams {
+	size_t cutoff = 30;
+	int seed = -1;
+	double alpha = 0.95;
+	double T = 100;
+	bool randinit = false;
+};
 
+struct Trial {
+	std::string input_fp;
+	std::string output_dir = "output";
+	std::vector<float> times;
+	std::vector<size_t> scores;
+	std::vector<int> bestpath;
+	int bestscore;
+	SAParams sap;
+	bool verbose = false;
 
-int* simann(int** dist, int dim, bool verbose=false, size_t cutoff=10,
-		double alpha=0.95, int beta=5, double T=10)
+	std::string filename_to_path(std::string name)
+	{
+		// gets the path from the full filename
+		// returns name if no separator found
+		size_t idx = name.find(SEP);
+		return idx != std::string::npos ? name.substr(idx) : name;
+	}
+
+	std::string filename_to_loc(std::string name)
+	{
+		// gets the location from the full filename
+		std::string path_name = filename_to_path(name);
+		return path_name.substr(0, path_name.find(".tsp"));
+	}
+
+	std::string get_output_path(std::string suffix)
+	{
+		// write solution to <instance>_<method>_<cutoff>[_<random_seed>].<suffix>
+		std::string output_fp = "";
+
+		// idempotentally create dir and add to output filepath
+		if (!output_dir.empty())
+		{
+			if (!fs::exists(output_dir.c_str()))
+				fs::create_directory(output_dir.c_str());
+
+			output_fp += output_dir + SEP;
+		}
+
+		output_fp += filename_to_loc(input_fp) + "_LS1_" + std::to_string(sap.cutoff);
+
+		if (sap.seed != -1)
+			output_fp += "_" + std::to_string(sap.seed);
+
+		output_fp += "." + suffix;
+		return output_fp;
+	}
+
+	void write_solution()
+	{
+		// write to .sol file 2 lines as follows:
+		// bestscore (ex 277952)
+		// bestpath comma separated (ex 0,2,96,5,3,7,8,4,1)
+		std::string output_fp = get_output_path("sol");
+		std::ofstream out_file(output_fp);
+		out_file << bestscore << "\n";
+
+		int dim = bestpath.size();
+		for (size_t i=0; i < dim; i++)
+		{
+			out_file << bestpath[i];
+			if (i < dim-1)
+				out_file << ",";
+		}
+	}
+
+	void write_trace()
+	{
+		// write to .trace file time and score of each found
+		// ex: 3.45, 102
+		std::string output_fp = get_output_path("trace");
+		std::ofstream out_file(output_fp);
+		for (size_t i=0; i < times.size(); i++)
+		{
+			out_file << times[i] << "," << scores[i];
+			if (i != times.size())
+				out_file << "\n";
+		}
+	}
+};
+
+void simann(Trial &trial);
+float rounder(float val, int decis);
+int get_score(std::vector<int> &path, int** dist);
+void print_path(std::vector<int> &path, int** dist);
+int get_dim(std::string fp);
+int** get_adj_matrix(std::string fp, int dim);
+
+void init_sa(std::vector<int> &path, int** dist, int dim)
 {
-	int path[dim];
-	std::iota(path, path+dim, 0);
+	// naive nearest neighbor
+	for (int i=0; i < dim; i++)
+		path[i] = 0;
 
-	int *bestpath = new int[dim];
-	std::copy(path, path+dim, bestpath);
+	for (int i=0; i < dim-1; i++)
+	{
+		int start_idx = path[i];
+		int minval = RAND_MAX;
+		for (int j=0; j < dim; j++)
+		{
+			// j not in path yet
+			if (std::find(path.begin(), path.end(), j) == path.end())
+			{
+				// cost of j lower
+				int cost = dist[start_idx][j];
+				if (cost <= minval)
+				{
+					minval = cost;
+					path[i+1] = j;
+				}
+			}
+		}
+	}
+}
 
-	// randomize initial values
-	std::random_device rd;
-	std::mt19937 g(rd());
-	std::shuffle(path, path+dim, g);
+void simann(Trial &trial)
+{
+	int dim = get_dim(trial.input_fp);
+	int** dist = get_adj_matrix(trial.input_fp, dim);
+	SAParams sap = trial.sap;
+
+	std::vector<int> path(dim);
+	init_sa(path, dist, dim);
+	trial.bestpath = path;
+
+	// optionally randomize initial values
+	if (sap.randinit)
+		if (sap.seed != -1)
+		{
+			std::srand(sap.seed);
+			std::shuffle(path.begin(), path.end(), std::default_random_engine(sap.seed));
+		} else
+			std::shuffle(path.begin(), path.end(), std::default_random_engine(std::time(0)));
 
 	int j = 0;
-	int steps = dim*(dim-1);
-	int neighscore, idx1, idx2;
-	int priorscore = get_score(path, dist, dim);
-	int bestscore = priorscore;
-	double p, duration;
+	int steps, neighscore, idx1, idx2, idx3;
+	int priorscore = get_score(path, dist);
+	trial.bestscore = priorscore;
+	double p;
+	double duration = 0;
+	double T = priorscore, alpha = sap.alpha;
 
-	if (verbose)
-		std::cout << "Initial:\n";
-		print_path(bestpath, dist, dim);
+	if (trial.verbose)
+	{
+		std::cout << "\nInitial Path:\n";
+		print_path(trial.bestpath, dist);
+	}
 
-	std::clock_t start;
+	std::clock_t start = std::clock();
 	while (true)
 	{
+		steps = dim*(dim-1);
 		// stopping conditions
 		// - no score improvement for beta T values
 		// - timeout
-		duration = (double) (std::clock()-start)/CLOCKS_PER_SEC;
-		if (j >= beta || duration > cutoff)
+		if (duration > sap.cutoff-1)
 			break;
 
-		/// perform dim*(dim-1) search steps for given T value
+		// perform dim*(dim-1) search steps for given T value
 		while (true)
 		{
 			// stop after dim*(dim-1) steps
 			if (steps == 0)
 				break;
 
-			// random 2-exchange
+			// random 3-exchange
 			idx1 = std::rand() % dim;
 			idx2 = std::rand() % dim;
+			idx3 = std::rand() % dim;
 			std::swap(path[idx1], path[idx2]);
-			neighscore = get_score(path, dist, dim);
+			std::swap(path[idx1], path[idx3]);
+			neighscore = get_score(path, dist);
 
 			// metropolis condition
 			if (neighscore > priorscore)
 			{
 				p = exp((double)(priorscore-neighscore)/T);
-				if ((double) std::rand()/RAND_MAX < p)
+				// double r = (double) std::rand()/RAND_MAX;
+				// replace with probability p
+				if ((double) std::rand()/RAND_MAX > p)
+				{
+					// REJECT
+					std::swap(path[idx1], path[idx3]);
 					std::swap(path[idx1], path[idx2]);
+				}
 				else
+				{
+					// ACCEPT
 					priorscore = neighscore;
+				}
 			}
 			else
 			{
+				// ACCEPT
 				priorscore = neighscore;
 			}
 
@@ -78,15 +231,18 @@ int* simann(int** dist, int dim, bool verbose=false, size_t cutoff=10,
 		}
 
 		// check and reflect any score improvement
-		if (priorscore < bestscore)
+		duration = (double) (std::clock()-start)/CLOCKS_PER_SEC;
+		if (priorscore < trial.bestscore)
 		{
-			bestscore = priorscore;
-			std::copy(path, path+dim, bestpath);
+			trial.bestscore = priorscore;
+			trial.bestpath = path;
+			trial.times.push_back(rounder(duration, 2));
+			trial.scores.push_back(trial.bestscore);
 		}
 		else
 		{
-			priorscore = bestscore;
-			std::copy(bestpath, bestpath+dim, path);
+			priorscore = trial.bestscore;
+			path = trial.bestpath;
 			j++;
 		}
 
@@ -94,39 +250,128 @@ int* simann(int** dist, int dim, bool verbose=false, size_t cutoff=10,
 		T *= alpha;
 	}
 
-	return bestpath;
+	if (trial.verbose)
+	{
+		std::cout << "\nBest Path:\n";
+		print_path(trial.bestpath, dist);
+	}
 }
 
-int get_score(int* path, int** dist, int dim)
+float rounder(float val, int decis)
 {
+	int tmp = (int)(val*pow(10, decis)+0.5);
+	return (float)tmp/pow(10, decis);
+}
+
+int get_score(std::vector<int> &path, int** dist)
+{
+	int dim = path.size();
 	int score = 0;
 	for (int i=0; i < dim-1; i++)
 		score += dist[path[i]][path[i+1]];
+	score += dist[path[0]][path[dim-1]];
 	return score;
 }
 
-void print_path(int* path, int** dist, int dim)
+void print_path(std::vector<int> &path, int** dist)
 {
 	std::cout << "path: ";
-	std::copy(path, path+dim, std::ostream_iterator<int>(std::cout, " "));
+	std::copy(path.begin(), path.end(), std::ostream_iterator<int>(std::cout, " "));
 	std::cout << "\n";
-	std::cout << "score: " << get_score(path, dist, dim) << "\n";
+	std::cout << "score: " << get_score(path, dist) << "\n";
+}
+
+int get_dim(std::string fp)
+{
+	std::string line;
+	std::ifstream tsp_inp;
+	tsp_inp.open(fp);
+	int count_line = 0, dim;
+	if (tsp_inp.is_open())
+	{
+		while (std::getline(tsp_inp, line))
+		{
+			count_line += 1;
+			if (count_line == 3)
+			{
+				std::istringstream iss(line);
+				std::string s;
+				if (iss >> s >> dim)
+					break;
+			}
+		}
+	}
+
+	return dim;
+}
+
+int** get_adj_matrix(std::string fp, int dim)
+{
+	std::string line;
+	std::ifstream tsp_inp;
+	tsp_inp.open(fp);
+	int count_line = 0, i;
+
+	double** coord = new double*[dim];
+	for (i=0; i < dim; i++)
+		coord[i] = new double[2];
+	i = 0;
+	if (tsp_inp.is_open())
+	{
+		while (std::getline(tsp_inp, line))
+		{
+			count_line += 1;
+			if ((count_line >= 6) && (count_line < (dim+6)))
+			{
+				std::istringstream iss(line);
+				int a;
+				double b, c;
+				if (iss >> a >> b >> c)
+				{
+					coord[i][0] = b;
+					coord[i][1] = c;
+					i++;
+				}
+			}
+		}
+	}
+
+	tsp_inp.close();
+
+	int** adj = new int*[dim];
+	for (i=0; i < dim; ++i)
+		adj[i] = new int[dim];
+
+	for (i = 0; i < dim; i++)
+		for (int j=0; j <= i; j++)
+		{
+			if (i == j)
+				adj[i][j] = 0;
+			else
+				adj[j][i] = adj[i][j] = std::round(std::sqrt((coord[i][0]-coord[j][0])*(coord[i][0]-coord[j][0])+(coord[i][1]-coord[j][1])*(coord[i][1]-coord[j][1])));
+		}
+
+	return adj;
 }
 
 int main()
 {
-	int dim = 10;
-	int** dist = new int* [dim];
-	for (int i=0; i < dim; i++)
-		dist[i] = new int[dim];
-
-	for (int i=0; i < dim; i++)
-		for (int j=0; j < dim; j++)
-			dist[i][j] = std::rand() % dim;
-
-	int* bestpath = simann(dist, dim, true);
-	std::cout << "\nResults:\n";
-	print_path(bestpath, dist, dim);
+	SAParams sap;
+	sap.cutoff = 5;
+	sap.alpha = 0.95;
+	int trial_count = 10;
+	for (int i=0; i < trial_count; i++)
+	{
+		Trial trial;
+		sap.seed = i+1;
+		trial.sap = sap;
+		trial.input_fp = "DATA/NYC.tsp";
+		trial.verbose = true;
+		trial.output_dir = "tmp";
+		simann(trial);
+		trial.write_solution();
+		trial.write_trace();
+	}
 
 	return 0;
 }
