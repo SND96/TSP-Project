@@ -6,3 +6,6 @@ output
 Untitled.ipynb
 .ipynb_checkpoints
 __pycache__
+.DS_STORE
+*.sol
+*.trace
