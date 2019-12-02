@@ -1,6 +1,7 @@
 // code for approximation algorithm
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <iomanip>  // for setw() and ws
 #include <string>
@@ -323,7 +324,7 @@ int main()
 {
 
 	//get Adjacency Matrix
-	string inputFilePath = "DATA/Cincinnati.tsp";
+	string inputFilePath = "DATA/Roanoke.tsp";
 	int dim = getDim(inputFilePath);
 	int** adj = getAdjMatrix(inputFilePath, dim);
 	cout << "Number of nodes: " << dim << endl;
@@ -340,7 +341,9 @@ int main()
 
 
 	int mstV = dim-1;
-	int startingVertex = 0;
+	srand(3);
+	int startingVertex = rand()%dim;
+	cout<<startingVertex<<endl;
 	Graph_DFS g(dim, mst->array);
 
 	cout << "Following is Depth First Traversal"
@@ -355,7 +358,7 @@ int main()
 	}
 	cout<<endl;
 	sumOfEdges += adj[dfsPath[dim - 1]][dfsPath[0]];
-	double opt = 277952.0;
+	double opt = 655454.0;
 	cout << "Path Cost = " << (sumOfEdges) << endl;
 	cout << "Approximation Ratio = " << (sumOfEdges/opt) << endl;
 
