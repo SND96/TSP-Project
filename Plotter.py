@@ -75,11 +75,9 @@ class Plotter:
         if yax_label:
             ax.set_ylabel(yax_label, color=self.tick_color)
 
-        # set x-axis scale
-        ax.set_xscale(xscale)
-
-        # remove minor ticks for log scale
+        # set x-axis scale and remove minor ticks for log scale
         if xscale == 'log':
+            ax.set_xscale(xscale)
             plt.minorticks_off()
 
         ax.xaxis.set_major_formatter(self.xfmt)
