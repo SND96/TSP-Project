@@ -10,6 +10,22 @@ class QRTD(Plotter):
                  line_alpha=0.7, line_width=1.2, tick_color='0.25', bgc='0.90',
                  fc='0.60', title_color='0.15', xfmt='{x:,.2f}',
                  yfmt='{x:,.1f}', grid_style='dotted'):
+        """
+        params:
+        - outdir: output directory (ex 'output')
+        - target_loc: target location (ex 'Atlanta')
+        - algo: algorithm (ex 'LS1')
+        - solpath: solution path
+        - line_alpha: plot line opacity
+        - line_width: plot line width
+        - tick_color: axis tick color
+        - bgc: background color
+        - fc: foreground color
+        - title_color: title color
+        - xfmt: x-axis label format
+        - yfmt: y-axis label format
+        - grid_style: grid line style
+        """
         # get trace paths from given output directory, target_loc, algo
         tps = [f for f in listdir(outdir) if isfile(join(outdir, f))]
         tps = [f for f in tps if f.endswith('.trace')]
@@ -97,7 +113,7 @@ class QRTD(Plotter):
 
 if __name__ == '__main__':
     """
-    Example: QRTD plot for simulated annealing NYC
+    Example: QRTD plot for simulated annealing NYC results
     """
     plotter = QRTD('tmp', 'NYC', 'LS1')
     plotter.build(sqs=[0.14, 0.16, 0.18], should_show=True, xscale=None)

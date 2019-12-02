@@ -9,6 +9,19 @@ class Plotter:
                  bgc='0.90', fc='0.60', title_color='0.15',
                  xfmt='{x:,.2f}', yfmt='{x:,.1f}', grid_style=None,
                  xtickcnt=7):
+        """
+        params:
+        - line_alpha: plot line opacity
+        - line_width: plot line width
+        - tick_color: axis tick color
+        - bgc: background color
+        - fc: foreground color
+        - title_color: title color
+        - xfmt: x-axis tick label format
+        - yfmt: y-axis tick label format
+        - grid_style: grid line style
+        - xtickcnt: number of x-axis major ticks
+        """
         self.line_alpha = line_alpha
         self.line_width = line_width
         self.tick_color = tick_color
@@ -23,6 +36,15 @@ class Plotter:
 
     def boxplot(self, X, yax_label=None, title=None, should_show=False,
                 should_save=False, save_path=None):
+        """
+        params:
+        - X: input vals for boxplot of length n
+        - yax_label: y-axis label
+        - title: plot title
+        - should_show: display plot
+        - should_save: saves plot to save_path
+        - save_path: path to save plot
+        """
         fig, ax = plt.subplots()
         ax.boxplot(X)
 
@@ -50,7 +72,20 @@ class Plotter:
     def plot(self, X, Y, labels=None, xax_label=None, yax_label=None,
              colors=None, title=None, should_show=False, should_save=False,
              save_path=None, xscale='log'):
-
+        """
+        params:
+        - X: x-vals for n plot lines of length d (nxd)
+        - Y: y-vals for n plot lines of length d (nxd)
+        - labels: plot legend labels; defaults to 'plot <number>'
+        - xax_label: x-axis label
+        - yax_label: y-axis label
+        - colors: plot line colors
+        - title: plot title
+        - should_show: displays plot
+        - should_save: saves plot to save_path
+        - save_path: path to save plot
+        - xscale: x-axis scale; defaults to log
+        """
         if labels is None:
             labels = [f'plot {i+1}' for i in range(Y.shape[0])]
 
@@ -106,10 +141,3 @@ class Plotter:
         if scheme is None:
             scheme = self._cmap
         return [scheme(r) for r in np.random.ranf(size=count)]
-
-
-if __name__ == '__main__':
-    yvals = np.random.random((2, 10))
-    xvals = np.array([range(y.shape[0]) for y in yvals])
-    plotsky = Plotter()
-    plotsky.plot(xvals, yvals, should_show=True)
