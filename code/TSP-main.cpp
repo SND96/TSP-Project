@@ -15,7 +15,6 @@ int main(int argc, char**argv)
     // read command line arguments
     string filePath = argv[2];
     int cutoff = atoi(argv[6]);
-    cout<<cutoff;
     string method = argv[4];
     int seed;
     if( argc == 9 )
@@ -47,7 +46,7 @@ int main(int argc, char**argv)
     chrono::high_resolution_clock::time_point startTime = chrono::high_resolution_clock::now();
 
     // find file paths
-    string inputFilePath = "DATA/" + filePath;
+    string inputFilePath = "../DATA/" + filePath;
     string instance = filePath.substr(0, filePath.size()-4);
     string traceFilePath = "../output/" + instance + ".trace";
     string solFilePath = "../output/" + instance + ".sol";
