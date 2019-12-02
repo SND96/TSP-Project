@@ -11,141 +11,91 @@
 #include <sstream> // std::istringstream
 #include <vector> // std::vector
 #include <experimental/filesystem> // fs::create_directory, fs::exists
+#include "simulated_annealing.h"
 
 namespace fs = std::experimental::filesystem;
+using namespace SA;
 
-// path separator for windows os
-#if defined(_WIN16) | defined(_WIN32) | defined(_WIN64)
-#define SEP "\\"
-#else
-#define SEP "/"
-#endif
-
-// DECLARATIONS
-struct SAParams {
-	size_t cutoff = 30;
-	int seed = -1;
-	double alpha = 0.95;
-	double T = 100;
-	bool randinit = false;
-};
-
-struct Trial {
-	std::string input_fp;
-	std::string output_dir = "output";
-	std::vector<float> times;
-	std::vector<size_t> scores;
-	std::vector<int> bestpath;
-	int bestscore;
-	SAParams sap;
-	bool verbose = false;
-
-	std::string filename_to_path(std::string name)
-	{
-		// gets the path from the full filename
-		// returns name if no separator found
-		size_t idx = name.find(SEP);
-		return idx != std::string::npos ? name.substr(idx) : name;
-	}
-
-	std::string filename_to_loc(std::string name)
-	{
-		// gets the location from the full filename
-		std::string path_name = filename_to_path(name);
-		return path_name.substr(0, path_name.find(".tsp"));
-	}
-
-	std::string get_output_path(std::string suffix)
-	{
-		// write solution to <instance>_<method>_<cutoff>[_<random_seed>].<suffix>
-		std::string output_fp = "";
-
-		// idempotentally create dir and add to output filepath
-		if (!output_dir.empty())
-		{
-			if (!fs::exists(output_dir.c_str()))
-				fs::create_directory(output_dir.c_str());
-
-			output_fp += output_dir + SEP;
-		}
-
-		output_fp += filename_to_loc(input_fp) + "_LS1_" + std::to_string(sap.cutoff);
-
-		if (sap.seed != -1)
-			output_fp += "_" + std::to_string(sap.seed);
-
-		output_fp += "." + suffix;
-		return output_fp;
-	}
-
-	void write_solution()
-	{
-		// write to .sol file 2 lines as follows:
-		// bestscore (ex 277952)
-		// bestpath comma separated (ex 0,2,96,5,3,7,8,4,1)
-		std::string output_fp = get_output_path("sol");
-		std::ofstream out_file(output_fp);
-		out_file << bestscore << "\n";
-
-		int dim = bestpath.size();
-		for (size_t i=0; i < dim; i++)
-		{
-			out_file << bestpath[i];
-			if (i < dim-1)
-				out_file << ",";
-		}
-	}
-
-	void write_trace()
-	{
-		// write to .trace file time and score of each found
-		// ex: 3.45, 102
-		std::string output_fp = get_output_path("trace");
-		std::ofstream out_file(output_fp);
-		for (size_t i=0; i < times.size(); i++)
-		{
-			out_file << times[i] << "," << scores[i];
-			if (i != times.size())
-				out_file << "\n";
-		}
-	}
-};
-
-void simann(Trial &trial);
+/* DECLARATIONS */
+void init_sa(std::vector<int> &path, int** dist, int dim);
 float rounder(float val, int decis);
 int get_score(std::vector<int> &path, int** dist);
 void print_path(std::vector<int> &path, int** dist);
 int get_dim(std::string fp);
 int** get_adj_matrix(std::string fp, int dim);
 
-void init_sa(std::vector<int> &path, int** dist, int dim)
+/* DEFINITIONS */
+std::string Trial::filename_to_path(std::string name)
 {
-	// naive nearest neighbor
-	for (int i=0; i < dim; i++)
-		path[i] = 0;
+	// gets the path from the full filename
+	// returns name if no separator found
+	size_t idx = name.find(SEP);
+	return idx != std::string::npos ? name.substr(idx) : name;
+}
 
-	for (int i=0; i < dim-1; i++)
+std::string Trial::filename_to_loc(std::string name)
+{
+	// gets the location from the full filename
+	std::string path_name = filename_to_path(name);
+	return path_name.substr(0, path_name.find(".tsp"));
+}
+
+std::string Trial::get_output_path(std::string suffix)
+{
+	// write solution to <instance>_<method>_<cutoff>[_<random_seed>].<suffix>
+	std::string output_fp = "";
+
+	// idempotentally create dir and add to output filepath
+	if (!output_dir.empty())
 	{
-		int start_idx = path[i];
-		int minval = RAND_MAX;
-		for (int j=0; j < dim; j++)
-		{
-			// j not in path yet
-			if (std::find(path.begin(), path.end(), j) == path.end())
-			{
-				// cost of j lower
-				int cost = dist[start_idx][j];
-				if (cost <= minval)
-				{
-					minval = cost;
-					path[i+1] = j;
-				}
-			}
-		}
+		if (!fs::exists(output_dir.c_str()))
+			fs::create_directory(output_dir.c_str());
+
+		output_fp += output_dir + SEP;
+	}
+
+	output_fp += filename_to_loc(input_fp) + "_LS1_" + std::to_string(sap.cutoff);
+
+	if (sap.seed != -1)
+		output_fp += "_" + std::to_string(sap.seed);
+
+	output_fp += "." + suffix;
+	return output_fp;
+}
+
+void Trial::write_solution()
+{
+	// write to .sol file 2 lines as follows:
+	// bestscore (ex 277952)
+	// bestpath comma separated (ex 0,2,96,5,3,7,8,4,1)
+	std::string output_fp = get_output_path("sol");
+	std::ofstream out_file(output_fp);
+	out_file << bestscore << "\n";
+
+	int dim = bestpath.size();
+	for (size_t i=0; i < dim; i++)
+	{
+		out_file << bestpath[i];
+		if (i < dim-1)
+			out_file << ",";
 	}
 }
 
-void simann(Trial &trial)
+void Trial::write_trace()
+{
+	// write to .trace file time and score of each found
+	// ex: 3.45, 102
+	std::string output_fp = get_output_path("trace");
+	std::ofstream out_file(output_fp);
+	for (size_t i=0; i < times.size(); i++)
+	{
+		out_file << times[i] << "," << scores[i];
+		if (i != times.size())
+			out_file << "\n";
+	}
+}
+
+void SA::simann(Trial &trial)
 {
 	int dim = get_dim(trial.input_fp);
 	int** dist = get_adj_matrix(trial.input_fp, dim);
@@ -257,6 +207,33 @@ void simann(Trial &trial)
 	}
 }
 
+void init_sa(std::vector<int> &path, int** dist, int dim)
+{
+	// naive nearest neighbor
+	for (int i=0; i < dim; i++)
+		path[i] = 0;
+
+	for (int i=0; i < dim-1; i++)
+	{
+		int start_idx = path[i];
+		int minval = RAND_MAX;
+		for (int j=0; j < dim; j++)
+		{
+			// j not in path yet
+			if (std::find(path.begin(), path.end(), j) == path.end())
+			{
+				// cost of j lower
+				int cost = dist[start_idx][j];
+				if (cost <= minval)
+				{
+					minval = cost;
+					path[i+1] = j;
+				}
+			}
+		}
+	}
+}
+
 float rounder(float val, int decis)
 {
 	int tmp = (int)(val*pow(10, decis)+0.5);
@@ -356,6 +333,11 @@ int** get_adj_matrix(std::string fp, int dim)
 
 int main()
 {
+	/*
+	 * Example Usage:
+	 * 10 trials of NYC with 5 second cutoff and 0.95 alpha
+	 * writes solution to 'tmp'
+	 */
 	SAParams sap;
 	sap.cutoff = 5;
 	sap.alpha = 0.95;
