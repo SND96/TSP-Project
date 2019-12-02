@@ -1,4 +1,4 @@
-
+// code for approximation algorithm
 
 #include <stdio.h>
 #include <math.h>
@@ -19,8 +19,6 @@ using namespace std;
 
 
 class Approximation{
-
-	
 
 	public:
 		int V;

@@ -1,3 +1,5 @@
+// code for branch and bound implementation
+
 #include <iomanip>  // for setw() and ws
 #include <string>
 #include <fstream> // for file handling
@@ -9,6 +11,7 @@
 #include <iostream>
 #include <climits> // for INT_MAX
 #include <chrono> // for time
+#include "bnb.h"
 
 using namespace std;
 
@@ -37,10 +40,10 @@ void writeToOutputFile(string traceFileName, string solFileName, int bestWeight,
     }
 
     // write results to output files
-    tracefile<<diff<<", "<<bestWeight<<"\n";
+    tracefile<<diff<<","<<bestWeight<<"\n";
     solfile<<bestWeight<<"\n";
     for(int i=0;i<dim;i++)
-        solfile<<curr_path[i]<<" ";
+        solfile<<curr_path[i]<<",";
     solfile<<curr_path[0];
     solfile.close();
     tracefile.close();
@@ -259,6 +262,7 @@ int** getAdjMatrix(string filePath, int dim)
     for (i = 0; i < dim; ++i)
         adj[i] = new int[dim];
 
+    // find euclidean distance
     for (i = 0; i < dim; i++)
         for (int j = 0; j <= i; j++) {
             if (i == j)
