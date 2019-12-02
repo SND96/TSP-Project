@@ -20,7 +20,6 @@ namespace SA
 		int seed = -1;
 		double alpha = 0.95;
 		double T = 100;
-		bool randinit = false;
 	};
 
 	struct Trial {

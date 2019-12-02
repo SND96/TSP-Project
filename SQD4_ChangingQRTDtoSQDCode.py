@@ -3,24 +3,39 @@ from os.path import isfile, join
 import pandas as pd
 import numpy as np
 from Plotter import Plotter
-from matplotlib.pylab import plt
 
 
 class QRTD(Plotter):
-    def __init__(self, outdir, solpath="DATA/solutions.csv", line_alpha=0.7,
-                 line_width=1.2, tick_color='0.25', bgc='0.90',
+    def __init__(self, outdir, target_loc, algo, solpath="DATA/solutions.csv",
+                 line_alpha=0.7, line_width=1.2, tick_color='0.25', bgc='0.90',
                  fc='0.60', title_color='0.15', xfmt='{x:,.2f}',
                  yfmt='{x:,.1f}', grid_style='dotted'):
-        # get trace files from given output directory
-        trace_paths = [f for f in listdir(outdir) if isfile(join(outdir, f))]
-        if len(trace_paths) == 0:
+        """
+        params:
+        - outdir: output directory (ex 'output')
+        - target_loc: target location (ex 'Atlanta')
+        - algo: algorithm (ex 'LS1')
+        - solpath: solution path
+        - line_alpha: plot line opacity
+        - line_width: plot line width
+        - tick_color: axis tick color
+        - bgc: background color
+        - fc: foreground color
+        - title_color: title color
+        - xfmt: x-axis label format
+        - yfmt: y-axis label format
+        - grid_style: grid line style
+        """
+        # get trace paths from given output directory, target_loc, algo
+        tps = [f for f in listdir(outdir) if isfile(join(outdir, f))]
+        tps = [f for f in tps if f.endswith('.trace')]
+        tps = [f for f in tps if f.startswith(f'{target_loc}_{algo}')]
+
+        if len(tps) == 0:
             raise ValueError('outdir must contain trace files')
 
-        # TSP destination ex: 'Atlanta'
-        target_loc = trace_paths[0].split('_')[0].capitalize()
-
         # cutoff in secs
-        self.cutoff = int(trace_paths[0].split('_')[2])
+        self.cutoff = int(tps[0].split('_')[2])
 
         # get optimal value from provided solutions for trace instance
         df_sol = pd.read_csv(solpath)
@@ -29,7 +44,7 @@ class QRTD(Plotter):
         # get trace entries
         cols = ['Trial', 'RT', 'Value']
         self.df_trials = pd.DataFrame(columns=cols)
-        for i, f in enumerate(trace_paths):
+        for i, f in enumerate(tps):
             df_tmp = pd.read_csv(join(outdir, f), names=["RT", "Value"])
             df_tmp['Trial'] = i+1
             self.df_trials = pd.concat([self.df_trials, df_tmp], sort=True)
@@ -39,10 +54,6 @@ class QRTD(Plotter):
         # calculate rel err for data
         self.df_trials['RE'] = (self.df_trials.Value-self.opt)/self.opt
 
-
-##        print(self.df_trials.to_numpy())
-##        print(type(self.df_trials.to_numpy()))
-        
         # init base plotter
         super().__init__(line_alpha=line_alpha, line_width=line_width,
                          tick_color=tick_color, bgc=bgc, fc=fc,
@@ -59,18 +70,58 @@ class QRTD(Plotter):
         # return optimal value of location
         return self._df_opt.Value.values[0]
 
-    def plot_qrtd(self, re_cuts=np.array([0.02, 0.04, 0.06, 0.08]),
-                  should_show=True, should_save=False, save_path=None,
-                  labels=None, xax_label='Runtime (CPU sec)',
-                  yax_label='P(solve)', colors=['b', 'g', 'r', 'c'],
-                  title=None):
+    def build(self, times=np.array([0.1,0.3,1,3.2,10]), maxSolQualPerc = 20, solutQualPercInterval = 0.1, xscale=None,
+              yax_label='P(solve)', xax_label='Relative Solution Quality (%)',
+              title=None, labels=None, colors=['b', 'g', 'r', 'c'],
+              should_show=False, should_save=False, save_path=None):
+##        """
+##        params:
+##        - sqs: solution quality plot lines
+##        - xscale: 'log' for log scale or defaults to linear (None)
+##        - yax_label: y-axis label
+##        - xax_label: x-axis label
+##        - title: chart title, defaults to 'Qualified RTD (<target_loc>)'
+##        - labels: plot line labels, defaults to <sqs>
+##        - colors: plot line colors
+##        - should_show: displays plot
+##        - should_save: saves chart to save_path
+##        - save_path: path to save
+##        """
+##        sqs = np.array(sqs)
+##        x = np.sort(self.df_trials.RT.unique())
+##        X = np.array([x.copy() for _ in range(sqs.shape[0])])
+##        Y = np.zeros((sqs.shape[0], X.shape[1]))
+##        for i, sq in enumerate(sqs):
+##            sqm = self.df_trials.RE <= sq
+##            for j, rt in enumerate(x):
+##                rtm = self.df_trials.RT <= rt
+##                Y[i, j] = self.df_trials[sqm & rtm].Trial.unique().shape[0]
+##        Y /= self.df_trials.Trial.unique().shape[0]
+##
+##        if should_show or should_save:
+##            if labels is None:
+##                labels = [f'{sq*100:.1f}%' for sq in sqs]
+##
+##            if title is None:
+##                title = f'Qualified RTD ({self.target_loc})'
+##
+##            self.plot(X, Y, labels=labels, xax_label=xax_label,
+##                      yax_label=yax_label, colors=colors, title=title,
+##                      should_show=should_show, should_save=should_save,
+##                      save_path=save_path, xscale=xscale)
 
+######################################
+        #INPUTS
+        #initialize time constraints
+##        times = np.array([0.1,0.3,1,3.2,10]) #number of seconds for cutoff
+##        maxSolQualPerc = 20 #in %
+##        solutQualPercInterval = 0.1
+######################################        
         #get each trial data
         dataNp = self.df_trials.to_numpy()
         lastInd = dataNp.shape[0]-1
         lastTrialNum = dataNp[lastInd, 0]
-        #initialize time constraints
-        times = np.array([0.1,0.3,1,3.2,10])
+
         #initialize array to store relative quality
         relQuality = np.zeros((times.shape[0], lastTrialNum)) #times are rows, trial number are columns
 
@@ -102,7 +153,7 @@ class QRTD(Plotter):
 ##        print(relQuality)
 
         #x = set of predecided relative solution qualities
-        x = np.arange(0,5, 0.1)
+        x = np.arange(0,maxSolQualPerc, solutQualPercInterval)
         X = np.array([x.copy() for _ in range(times.shape[0])])
         Y = np.zeros((times.shape[0],x.shape[0]))
         for timeInd in range(times.shape[0]):
@@ -121,11 +172,13 @@ class QRTD(Plotter):
                 title = f'Qualified RTD ({self.target_loc})'
 
             self.plot(X, Y, labels=labels, xax_label=xax_label,
-                      yax_label=yax_label, colors=['b', 'g', 'r', 'c', 'r'], title="HI",
+                      yax_label=yax_label, colors=['b', 'g', 'r', 'c', 'r'], title="SQD",
                       should_show=should_show, should_save=should_save,
-                      save_path=save_path)
+                      save_path=save_path,xscale=xscale)
 
 if __name__ == '__main__':
-    print(f'Testing SQD Plotter...')
-    plotter = QRTD("tmp2")
-    plotter.plot_qrtd()
+    """
+    Example: QRTD plot for simulated annealing NYC results
+    """
+    plotter = QRTD('tmp2', 'NYC', 'LS1')
+    plotter.build(times=np.array([0.1,0.3,1,3.2,10]), maxSolQualPerc = 20, solutQualPercInterval = 0.1, should_show=True, xscale=None)
