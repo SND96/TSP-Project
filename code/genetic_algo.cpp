@@ -477,7 +477,7 @@ void Genetic::run()
 		int elapsed = (chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now() - startTime).count())/1000000.0;
 		if (elapsed>=cutoff)
     	{
-        	exit(0);
+        	break;
     	}
 		int  old_size_population = real_size_population;
 		
@@ -547,19 +547,13 @@ void Genetic::run()
 		// 	cout << vec[i] << " ";
 		// cout << start_point;
 		// cout << " | Cost: " << population[0].second;
-		writeToOutputFile();
+		if(population[0].second < current_best)
+			writeToOutputFile();
 	}
 	
-	// if(show_population == true)
-	// 	showPopulation(); // shows the population
+	exit(0);
 	
 
-	// cout << "\nBest solution: ";
-	// const vector<int>& vec = population[0].first;
-	// for(int i = 0; i < graph->V; i++)
-	// 	cout << vec[i] << " ";
-	// cout << start_point;
-	// cout << " | Cost: " << population[0].second;
 }
 
 
@@ -571,41 +565,37 @@ int Genetic::getCostBestSolution()
 }
 void Genetic::writeToOutputFile()
 {
-    ofstream tracefile;
-    ofstream solfile;
-
-    // open trace file in append mode
-    tracefile.open(traceFilePath, ios_base::app);
-    solfile.open(solFilePath);
-
-    // find the current time
-    chrono::high_resolution_clock::time_point currTime = chrono::high_resolution_clock::now(); 
-
-    // find time difference in seconds to measure execution time rounded to 2 decimal places
-    float diff = round((chrono::duration_cast<chrono::microseconds>(currTime - startTime).count())/10000.0)/100.0;
-
-    // check if cutoff time exceeded
 
 
     // write results to output files
-	if(population[0].second < current_best)
-    {	current_best = population[0].second;
-		tracefile<<diff<<","<<current_best<<"\n";
+	
+    	ofstream tracefile;
+		ofstream solfile;
 
-		solfile<<current_best<<"\n";
+		// open trace file in append mode
+		tracefile.open(traceFilePath, ios_base::app);
+		solfile.open(solFilePath);
+
+
+		// find the current time
+		chrono::high_resolution_clock::time_point currTime = chrono::high_resolution_clock::now(); 
+
+		// find time difference in seconds to measure execution time rounded to 2 decimal places
+		float diff = round((chrono::duration_cast<chrono::microseconds>(currTime - startTime).count())/10000.0)/100.0;
+
+		// check if cutoff time exceeded
+
+		current_best = population[0].second;
+		tracefile<<diff<<","<<current_best<<"\n";
+			solfile<<current_best<<"\n";
 		const vector<int>& vec = population[0].first;
 		for(int i=0;i<graph->V;i++)
 			solfile<<vec[i]<<",";
 		solfile<<vec[0];
-		
-		}
-	
-    // if(diff>=cutoff)
-    // {
-    //     solfile.close();
-    //     tracefile.close();
-    //     exit(0);
-    // }
+
+		solfile.close();
+		tracefile.close();
+
 }
 ///////////////////////////
 // function to get the adjacency matrix and coordinates of vertices
@@ -713,7 +703,8 @@ int main(int argc, char**argv)
 			graph1->addEdge(i,j,adj[i][j]);
 		}
 
-	Genetic gen(graph1, 10, 10000000, 5, true, adj,  start, startTime, traceFilePath, solFilePath, cutoff);
+	Genetic gen(graph1, 10, 1000000, 5, true, adj,  start, startTime, traceFilePath, solFilePath, cutoff);
+
 	// struct Gen_Graph::Graph* mst = mst_obj.createGraph();
 
 	
