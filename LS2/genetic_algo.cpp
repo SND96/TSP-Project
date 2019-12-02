@@ -92,13 +92,6 @@ void Graph::generatesGraph()
 }
 
 
-void Graph::showInfoGraph()
-{
-	cout << "Showing info of graph:\n\n";
-	cout << "Number of vertices: " << V;
-	cout << "\nNumber of edges: " << map_edges.size() << "\n";
-}
-
 
 void Graph::addEdge(int src, int dest, int weight) // add a edge
 {
@@ -106,22 +99,9 @@ void Graph::addEdge(int src, int dest, int weight) // add a edge
 }
 
 
-void Graph::showGraph() // shows all connections of the graph
-{	
-	map<pair<int, int>, int>::iterator it;
-	for(it = map_edges.begin(); it != map_edges.end(); ++it)
-		cout << it->first.first << " linked to vertex " << it->first.second << " with weight " << it->second << endl;
-}
 
 
-int Graph::existsEdge(int src, int dest) // checks if exists a edge
-{
-	map<pair<int, int>,int>::iterator it = map_edges.find(make_pair(src, dest));
-	
-	if(it != map_edges.end())
-		return it->second; // returns cost
-	return -1;
-}
+
 typedef std::pair<std::vector<int>, int> my_pair;
 
 
@@ -637,7 +617,7 @@ int main()
 {
 
 	//get Adjacency Matrix
-	string inputFilePath = "DATA/Atlanta.tsp";
+	string inputFilePath = "DATA/Cincinnati.tsp";
 	int dim = getDim(inputFilePath);
 	int** adj = getAdjMatrix(inputFilePath, dim);
 	cout << "Number of nodes: " << dim << endl;
@@ -653,14 +633,13 @@ int main()
 			graph1->addEdge(i,j,adj[i][j]);
 		}
 
-	Genetic gen(graph1, 10, 1000, 5, true, adj,  start);
+	Genetic gen(graph1, 50, 1000000, 5, true, adj,  start);
 	// struct Gen_Graph::Graph* mst = mst_obj.createGraph();
 
 	
 	const clock_t begin_time = clock(); // gets time
 	gen.run(); // runs the genetic algorithm
 	cout << "\n\nTime for to run the genetic algorithm: " << float(clock () - begin_time) /  CLOCKS_PER_SEC << " seconds."; // shows time in seconds
-	
 
 
 	return 0;
