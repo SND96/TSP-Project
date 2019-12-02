@@ -323,7 +323,7 @@ int main()
 {
 
 	//get Adjacency Matrix
-	string inputFilePath = "DATA/Atlanta.tsp";
+	string inputFilePath = "DATA/Cincinnati.tsp";
 	int dim = getDim(inputFilePath);
 	int** adj = getAdjMatrix(inputFilePath, dim);
 	cout << "Number of nodes: " << dim << endl;
@@ -355,7 +355,7 @@ int main()
 	}
 	cout<<endl;
 	sumOfEdges += adj[dfsPath[dim - 1]][dfsPath[0]];
-	double opt = 2003763.0;
+	double opt = 277952.0;
 	cout << "Path Cost = " << (sumOfEdges) << endl;
 	cout << "Approximation Ratio = " << (sumOfEdges/opt) << endl;
 
