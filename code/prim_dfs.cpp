@@ -319,14 +319,32 @@ int getDim(string filePath)
 }
 ///////////////////////////////////////////////////
 // Driver code 
-int main()
+int main(int argc, char**argv)
 {
+    // read command line arguments
+    string filePath = argv[2];
+    int cutoff = atoi(argv[6]);
+    cout<<cutoff;
+    string method = argv[4];
+    int seed;
+    if( argc == 9 )
+        seed = atoi(argv[8]);
 
-	//get Adjacency Matrix
-	string inputFilePath = "DATA/Cincinnati.tsp";
-	int dim = getDim(inputFilePath);
-	int** adj = getAdjMatrix(inputFilePath, dim);
-	cout << "Number of nodes: " << dim << endl;
+    // making note of start time of execution
+    chrono::high_resolution_clock::time_point startTime = chrono::high_resolution_clock::now();
+
+    // find file paths
+    string inputFilePath = "DATA/" + filePath;
+    string instance = filePath.substr(0, filePath.size()-4);
+    string traceFilePath = instance + ".trace";
+    string solFilePath = instance + ".sol";
+
+    // calling the function to find number of vertices
+    int dim = getDim(inputFilePath);
+    
+    // calling function to find coordinates of vertices and adjacency matrix
+    int **adj = getAdjMatrix(inputFilePath, dim);
+	// cout << "Number of nodes: " << dim << endl;
 
 	///Variable for adjacency list representation of MST
 	Prim_MST mst_obj(dim);
