@@ -10,6 +10,7 @@
 #include <fstream> // std::fstream
 #include <sstream> // std::istringstream
 #include <vector> // std::vector
+#include <string> // for strings
 #include "simulated_annealing.h"
 
 using namespace SA;
@@ -112,12 +113,6 @@ void SA::simann(Trial &trial)
 	double duration = 0;
 	double T = priorscore, alpha = sap.alpha;
 
-	if (trial.verbose)
-	{
-		std::cout << "\nInitial Path:\n";
-		print_path(trial.bestpath, dist);
-	}
-
 	std::clock_t start = std::clock();
 	while (true)
 	{
@@ -188,12 +183,6 @@ void SA::simann(Trial &trial)
 
 		// geometric cooling
 		T *= alpha;
-	}
-
-	if (trial.verbose)
-	{
-		std::cout << "\nBest Path:\n";
-		print_path(trial.bestpath, dist);
 	}
 }
 
@@ -321,29 +310,35 @@ int** get_adj_matrix(std::string fp, int dim)
 	return adj;
 }
 
-int main()
+int main(int argc, char **argv)
 {
+	// read command line arguments
+    std::string filePath = argv[2];
+    int cutoff = atoi(argv[6]);
+    std::string method = argv[4];
+    int seed;
+    if( argc == 9 )
+        seed = atoi(argv[8]);
+
 	/*
 	 * Example Usage:
 	 * 10 trials of NYC with 5 second cutoff and 0.95 alpha
 	 * writes solution to 'output' directory
 	 */
 	SAParams sap;
-	sap.cutoff = 5;
+	sap.cutoff = cutoff;
 	sap.alpha = 0.95;
-	int trial_count = 10;
-	for (int i=0; i < trial_count; i++)
-	{
-		Trial trial;
-		sap.seed = i+1;
-		trial.sap = sap;
-		trial.input_fp = "DATA/NYC.tsp";
-		trial.verbose = true;
-		trial.output_dir = "output";
-		simann(trial);
-		trial.write_solution();
-		trial.write_trace();
-	}
+	
+	Trial trial;
+	sap.seed = seed;
+	trial.sap = sap;
+	trial.input_fp = "DATA/"+filePath;
+	trial.verbose = true;
+	trial.output_dir = "output";
+	simann(trial);
+	trial.write_solution();
+	trial.write_trace();
+	
 
 	return 0;
 }

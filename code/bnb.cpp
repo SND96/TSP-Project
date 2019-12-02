@@ -49,16 +49,17 @@ void writeToOutputFile(string traceFileName, string solFileName, int bestWeight,
     tracefile.close();
 }
 
-class TSP_BNB
-{   
-    public:
-    int N;
-    bool* visited ;
-    int* final_path ;
-    int final_res;
+
+// class TSP_BNB
+// {   
+//     public:
+//     int N;
+//     bool* visited ;
+//     int* final_path ;
+//     int final_res;
 
     // constructor for member variables
-    TSP_BNB(int dim)
+    TSP_BNB::TSP_BNB(int dim)
     {
         N = dim;
         visited = new bool[N];
@@ -69,7 +70,7 @@ class TSP_BNB
     }
     
     // function to copy current path to final path
-    void copyToFinal(int curr_path[], int *final_path) 
+    void TSP_BNB::copyToFinal(int curr_path[], int *final_path) 
     { 
         for (int i=0; i<N; i++) 
             final_path[i] = curr_path[i]; 
@@ -77,7 +78,7 @@ class TSP_BNB
     } 
       
     // function to find the minimum edge cost with one vertex i 
-    int firstMin(int** adj, int i) 
+    int TSP_BNB::firstMin(int** adj, int i) 
     { 
         int min = INT_MAX; 
         for (int k=0; k<N; k++) 
@@ -87,7 +88,7 @@ class TSP_BNB
     } 
       
     // function to find the second minimum edge cost with one vertex i 
-    int secondMin(int** adj, int i) 
+    int TSP_BNB::secondMin(int** adj, int i) 
     { 
         int first = INT_MAX, second = INT_MAX; 
         for (int j=0; j<N; j++) 
@@ -110,7 +111,7 @@ class TSP_BNB
     // curr_weight-> weight of the path so far 
     // level-> current level in the tree
     // curr_path[] -> current solution so far 
-    void BNBRecursive(int** adj, int curr_bound, int curr_weight, int level, int curr_path[], int *final_res, bool *visited, int *final_path, chrono::high_resolution_clock::time_point startTime, string traceFilePath, string solFilePath, int cutoff) 
+    void TSP_BNB::BNBRecursive(int** adj, int curr_bound, int curr_weight, int level, int curr_path[], int *final_res, bool *visited, int *final_path, chrono::high_resolution_clock::time_point startTime, string traceFilePath, string solFilePath, int cutoff) 
     { 
         // check if cutoff time reached
         int elapsed = (chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now() - startTime).count())/1000000.0;
@@ -174,7 +175,7 @@ class TSP_BNB
     } 
       
     // set first node as root, initialise curr_path, find initial bound and call the recursive fn 
-    void BNB(int** adj, int *final_res, bool *visited, int *final_path, chrono::high_resolution_clock::time_point startTime, string traceFilePath, string solFilePath, int cutoff) 
+    void TSP_BNB::BNB(int** adj, int *final_res, bool *visited, int *final_path, chrono::high_resolution_clock::time_point startTime, string traceFilePath, string solFilePath, int cutoff) 
     {   
         int curr_path[N+1]; 
       
@@ -198,7 +199,7 @@ class TSP_BNB
         // call the BNB recursive function
         BNBRecursive(adj, curr_bound, 0, 1, curr_path, final_res, visited, final_path, startTime, traceFilePath, solFilePath, cutoff); 
     } 
-};
+// };
 
 // function to find the number of vertices
 int getDim(string filePath)
@@ -273,42 +274,42 @@ int** getAdjMatrix(string filePath, int dim)
     return adj;
 }
 
-int main(int argc, char**argv)
-{
-    // read command line arguments
-    string filePath = argv[2];
-    int cutoff = atoi(argv[6]);
-    cout<<cutoff;
-    string method = argv[4];
-    int seed;
-    if( argc == 9 )
-        seed = atoi(argv[8]);
+// int main(int argc, char**argv)
+// {
+//     // read command line arguments
+//     string filePath = argv[2];
+//     int cutoff = atoi(argv[6]);
+//     cout<<cutoff;
+//     string method = argv[4];
+//     int seed;
+//     if( argc == 9 )
+//         seed = atoi(argv[8]);
 
-    // making note of start time of execution
-    chrono::high_resolution_clock::time_point startTime = chrono::high_resolution_clock::now();
+//     // making note of start time of execution
+//     chrono::high_resolution_clock::time_point startTime = chrono::high_resolution_clock::now();
 
-    // find file paths
-    string inputFilePath = "DATA/" + filePath;
-    string instance = filePath.substr(0, filePath.size()-4);
-    string traceFilePath = instance + ".trace";
-    string solFilePath = instance + ".sol";
+//     // find file paths
+//     string inputFilePath = "DATA/" + filePath;
+//     string instance = filePath.substr(0, filePath.size()-4);
+//     string traceFilePath = instance + ".trace";
+//     string solFilePath = instance + ".sol";
 
-    // calling the function to find number of vertices
-    int V = getDim(inputFilePath);
+//     // calling the function to find number of vertices
+//     int V = getDim(inputFilePath);
     
-    // calling function to find coordinates of vertices and adjacency matrix
-    int **adj = getAdjMatrix(inputFilePath, V);
+//     // calling function to find coordinates of vertices and adjacency matrix
+//     int **adj = getAdjMatrix(inputFilePath, V);
 
-    // calling BNB
-    TSP_BNB obj(V);
-    obj.BNB(adj, &obj.final_res, obj.visited, obj.final_path, startTime, traceFilePath, solFilePath, cutoff); 
+//     // calling BNB
+//     TSP_BNB obj(V);
+//     obj.BNB(adj, &obj.final_res, obj.visited, obj.final_path, startTime, traceFilePath, solFilePath, cutoff); 
 
-    printf("Minimum cost : %d\n", obj.final_res); 
-    printf("Path Taken : "); 
-    for (int i=0; i<=obj.N; i++) 
-        printf("%d ", obj.final_path[i]); 
-    chrono::high_resolution_clock::time_point currTime = chrono::high_resolution_clock::now();
-    float diff = (chrono::duration_cast<chrono::microseconds>(currTime-startTime).count())/1000000.0;
-    cout<<"\nTime taken in seconds:"<<diff;
-    return 0;
-}
+//     printf("Minimum cost : %d\n", obj.final_res); 
+//     printf("Path Taken : "); 
+//     for (int i=0; i<=obj.N; i++) 
+//         printf("%d ", obj.final_path[i]); 
+//     chrono::high_resolution_clock::time_point currTime = chrono::high_resolution_clock::now();
+//     float diff = (chrono::duration_cast<chrono::microseconds>(currTime-startTime).count())/1000000.0;
+//     cout<<"\nTime taken in seconds:"<<diff;
+//     return 0;
+// }

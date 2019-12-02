@@ -10,6 +10,9 @@
 #include <climits> // for INT_MAX
 #include <chrono> // for time
 #include "bnb.h"
+
+using namespace std;
+
 int main(int argc, char**argv)
 {
     // read command line arguments
@@ -19,7 +22,7 @@ int main(int argc, char**argv)
     int seed;
     if( argc == 9 )
         seed = atoi(argv[8]);
-
+    int method_num;
     // assigning a number to each method
     if(method=="BnB")
     {
@@ -31,25 +34,25 @@ int main(int argc, char**argv)
     }
     else if(method=="LS1")
     {
-        method_num = 2
+        method_num = 2;
     }
     else if(method=="LS2")
     {
-        method_num = 3
+        method_num = 3;
     }
     else
     {
-        method_num = 4
+        method_num = 4;
     }
 
     // making note of start time of execution
     chrono::high_resolution_clock::time_point startTime = chrono::high_resolution_clock::now();
 
     // find file paths
-    string inputFilePath = "../DATA/" + filePath;
+    string inputFilePath = "./DATA/" + filePath;
     string instance = filePath.substr(0, filePath.size()-4);
-    string traceFilePath = "../output/" + instance + ".trace";
-    string solFilePath = "../output/" + instance + ".sol";
+    string traceFilePath = "./output/" + instance + "_" + method + "_" + to_string(cutoff) + ".trace";
+    string solFilePath = "./output/" + instance + "_" + method + "_" + to_string(cutoff) + ".sol";
 
     // calling the function to find number of vertices
     int V = getDim(inputFilePath);
@@ -59,12 +62,24 @@ int main(int argc, char**argv)
 
     switch(method_num)
     {
-        case 0: TSP_BNB obj(V);
-                obj.BNB(adj, &obj.final_res, obj.visited, obj.final_path, startTime, traceFilePath, solFilePath, cutoff); 
-                break;
-        case 1: // call approx
-        case 2: // call LS1
-        case 3: // call LS2
+        case 0: {
+                    TSP_BNB obj(V);
+                    obj.BNB(adj, &obj.final_res, obj.visited, obj.final_path, startTime, traceFilePath, solFilePath, cutoff); 
+                    break;
+                }
+        case 1: {// call approx
+                    break;
+                }
+        case 2: {// call LS1
+                    break;
+                }
+        case 3: {// call LS2
+                    break;
+                }
+        case 4: {
+                    cout<<"Incorrect input";
+                    break;
+                }
     }
     return 0;
 }
