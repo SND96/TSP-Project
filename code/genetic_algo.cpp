@@ -46,10 +46,6 @@ Graph::Graph(int V) // constructor of Graph
 
 }
 
-// function to write new improved solutions when found
-
-
-
 void Graph::generatesGraph()
 {
 	vector<int> vec;
@@ -181,11 +177,6 @@ public:
 	this->solFilePath = solFilePath;
 	current_best = INT_MAX;
 }
-
-
-
-
-
 
 bool Genetic::existsChromosome(const vector<int> & v)
 {
@@ -675,7 +666,8 @@ int getDim(string filePath)
 	return dim;
 }
 
-int main(int argc, char** argv)
+
+int main(int argc, char**argv)
 {
 	string filePath = argv[2];
     int cutoff = atoi(argv[6]);
@@ -690,8 +682,8 @@ int main(int argc, char** argv)
     // find file paths
     string inputFilePath = "DATA/" + filePath;
     string instance = filePath.substr(0, filePath.size()-4);
-    string traceFilePath = instance + ".trace";
-    string solFilePath = instance + ".sol";
+    string traceFilePath = "../output/" + instance + ".trace";
+    string solFilePath = "../output/" + instance + ".sol";
 
     // find file paths
 	//get Adjacency Matrix
