@@ -1,5 +1,5 @@
-// code for genetic algorithm
 
+  
 #include <iostream>
 #include <cmath>
 #include <algorithm> // sort, next_permutation
@@ -13,7 +13,6 @@
 #include <fstream>
 #include <cstdlib>
 #include <sstream>
-#include <chrono>
 using namespace std;
 
 class Graph
@@ -45,6 +44,7 @@ Graph::Graph(int V) // constructor of Graph
 	this->total_edges = 0; // initially the total of edges is 0
 
 }
+
 
 void Graph::generatesGraph()
 {
@@ -127,18 +127,10 @@ private:
 	bool show_population; // flag to show population
 	int** adj_mat;
 	int start_point;
-	chrono::high_resolution_clock::time_point startTime;
-	int cutoff;
-	string traceFilePath;
-	string solFilePath;
-	int current_best;
-
 private:
 	void initialPopulation(); // generates the initial population
 public:
-	Genetic(Graph* graph, int size_population, int generations, int mutation_rate, bool show_population, int** adj_mat, int start_point, chrono::high_resolution_clock::time_point startTime, string traceFilePath, string solFilePath, int cutoff); // constructor
-	// Genetic(Graph* graph, int size_population, int generations, int mutation_rate, bool show_population, int** adj_mat, int start_point); // constructor
-
+	Genetic(Graph* graph, int size_population, int generations, int mutation_rate, bool show_population, int** adj_mat, int start_point); // constructor
 	int isValidSolution(std::vector<int>& solution); // checks if a solution is valid
 	void showPopulation(); // shows population
 	void crossOver(std::vector<int>& parent1, std::vector<int>& parent2); // makes the crossover
@@ -146,11 +138,10 @@ public:
 	void run(); // runs genetic algorithm
 	int getCostBestSolution(); // returns cost of the best solution
 	bool existsChromosome(const std::vector<int> & v); // checks if exists the chromosome
-	void writeToOutputFile();
 };
 
 // constructor of Genetic
-	Genetic::	Genetic(Graph* graph, int size_population, int generations, int mutation_rate, bool show_population, int** adj_mat, int start_point, chrono::high_resolution_clock::time_point startTime, string traceFilePath, string solFilePath, int cutoff) // constructor
+Genetic::Genetic(Graph* graph, int size_population, int generations, int mutation_rate, bool show_population, int** adj_mat, int start_point)
 {
 	if(size_population < 1) // checks if size of population is less than 1
 	{
@@ -171,12 +162,10 @@ public:
 	this->show_population = show_population;
 	this->adj_mat = adj_mat;
 	this->start_point = start_point;
-	this->startTime = startTime;
-	this->cutoff = cutoff;
-	this->traceFilePath = traceFilePath;
-	this->solFilePath = solFilePath;
-	current_best = INT_MAX;
 }
+
+
+
 
 bool Genetic::existsChromosome(const vector<int> & v)
 {
@@ -188,38 +177,6 @@ bool Genetic::existsChromosome(const vector<int> & v)
 			return true;
 	}
 	return false;
-}
-
-int Genetic::isValidSolution(vector<int>& solution)
-{
-	int total_cost = 0;
-	set<int> set_solution;
-	
-	// checks if not contains elements repeated
-	for(int i = 0; i < graph->V; i++)
-		set_solution.insert(solution[i]);
-	
-	if(set_solution.size() != (unsigned)graph->V)
-		return -1;
-
-	// checks if connections are valid
-	for(int i = 0; i < graph->V; i++)
-	{
-		if(i + 1 <  graph->V)
-		{
-			int cost = adj_mat [solution[i]] [solution[i+1]];
-
-			total_cost += cost;
-		}
-		else
-		{
-			int cost = adj_mat[solution[i]][ solution[0]];
-			
-
-			total_cost += cost;
-		}
-	}
-	return total_cost;
 }
 
 
@@ -464,9 +421,6 @@ void Genetic::crossOver(vector<int>& parent1, vector<int>& parent2)
 // runs the genetic algorithm
 void Genetic::run()
 {
-	// check if cutoff time reached
-
-
 	initialPopulation(); // gets initial population
 	
 	if(real_size_population == 0)
@@ -474,11 +428,6 @@ void Genetic::run()
 
 	for(int i = 0; i < generations; i++)
 	{
-		int elapsed = (chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now() - startTime).count())/1000000.0;
-		if (elapsed>=cutoff)
-    	{
-        	exit(0);
-    	}
 		int  old_size_population = real_size_population;
 		
 		/* selects two parents (if exists) who will participate 
@@ -542,24 +491,17 @@ void Genetic::run()
 				real_size_population--; // decrements the real_size_population in the unit
 			}
 		}
-		// const vector<int>& vec = population[0].first;
-		// for(int i = 0; i < graph->V; i++)
-		// 	cout << vec[i] << " ";
-		// cout << start_point;
-		// cout << " | Cost: " << population[0].second;
-		writeToOutputFile();
 	}
 	
-	// if(show_population == true)
-	// 	showPopulation(); // shows the population
+	if(show_population == true)
+		showPopulation(); // shows the population
 	
-
-	// cout << "\nBest solution: ";
-	// const vector<int>& vec = population[0].first;
-	// for(int i = 0; i < graph->V; i++)
-	// 	cout << vec[i] << " ";
-	// cout << start_point;
-	// cout << " | Cost: " << population[0].second;
+	cout << "\nBest solution: ";
+	const vector<int>& vec = population[0].first;
+	for(int i = 0; i < graph->V; i++)
+		cout << vec[i] << " ";
+	cout << start_point;
+	cout << " | Cost: " << population[0].second;
 }
 
 
@@ -569,46 +511,9 @@ int Genetic::getCostBestSolution()
 		return population[0].second;
 	return -1;
 }
-void Genetic::writeToOutputFile()
-{
-    ofstream tracefile;
-    ofstream solfile;
 
-    // open trace file in append mode
-    tracefile.open(traceFilePath, ios_base::app);
-    solfile.open(solFilePath);
-
-    // find the current time
-    chrono::high_resolution_clock::time_point currTime = chrono::high_resolution_clock::now(); 
-
-    // find time difference in seconds to measure execution time rounded to 2 decimal places
-    float diff = round((chrono::duration_cast<chrono::microseconds>(currTime - startTime).count())/10000.0)/100.0;
-
-    // check if cutoff time exceeded
-
-
-    // write results to output files
-	if(population[0].second < current_best)
-    {	current_best = population[0].second;
-		tracefile<<diff<<","<<current_best<<"\n";
-
-		solfile<<current_best<<"\n";
-		const vector<int>& vec = population[0].first;
-		for(int i=0;i<graph->V;i++)
-			solfile<<vec[i]<<",";
-		solfile<<vec[0];
-		
-		}
-	
-    // if(diff>=cutoff)
-    // {
-    //     solfile.close();
-    //     tracefile.close();
-    //     exit(0);
-    // }
-}
 ///////////////////////////
-// function to get the adjacency matrix and coordinates of vertices
+// Helper Functions to read input
 int** getAdjMatrix(string filePath, int dim)
 {
 	string line;
@@ -641,7 +546,6 @@ int** getAdjMatrix(string filePath, int dim)
 	for (i = 0; i < dim; ++i)
 		adj[i] = new int[dim];
 
-	// find euclidean distance
 	for (i = 0; i < dim; i++)
 		for (int j = 0; j <= i; j++) {
 			if (i == j)
@@ -676,28 +580,11 @@ int getDim(string filePath)
 	return dim;
 }
 
-
-int main(int argc, char**argv)
+int main()
 {
-	string filePath = argv[2];
-    int cutoff = atoi(argv[6]);
-    string method = argv[4];
-    int seed;
-    if( argc == 9 )
-        seed = atoi(argv[8]);
 
-    // making note of start time of execution
-    chrono::high_resolution_clock::time_point startTime = chrono::high_resolution_clock::now();
-
-    // find file paths
-    string inputFilePath = "DATA/" + filePath;
-    string instance = filePath.substr(0, filePath.size()-4);
-    string traceFilePath = "../output/" + instance + ".trace";
-    string solFilePath = "../output/" + instance + ".sol";
-
-    // find file paths
 	//get Adjacency Matrix
-	// inputFilePath = "DATA/Cincinnati.tsp";
+	string inputFilePath = "DATA/Cincinnati.tsp";
 	int dim = getDim(inputFilePath);
 	int** adj = getAdjMatrix(inputFilePath, dim);
 	cout << "Number of nodes: " << dim << endl;
@@ -713,7 +600,7 @@ int main(int argc, char**argv)
 			graph1->addEdge(i,j,adj[i][j]);
 		}
 
-	Genetic gen(graph1, 10, 10000000, 5, true, adj,  start, startTime, traceFilePath, solFilePath, cutoff);
+	Genetic gen(graph1, 50, 1000000, 5, true, adj,  start);
 	// struct Gen_Graph::Graph* mst = mst_obj.createGraph();
 
 	

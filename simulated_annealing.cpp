@@ -70,10 +70,9 @@ void Trial::write_solution()
 	int dim = bestpath.size();
 	for (size_t i=0; i < dim; i++)
 	{
-		out_file << bestpath[i];
-		if (i < dim-1)
-			out_file << ",";
+		out_file << bestpath[i] << ",";
 	}
+	out_file << bestpath[0];
 }
 
 void Trial::write_trace()
