@@ -10,10 +10,8 @@
 #include <fstream> // std::fstream
 #include <sstream> // std::istringstream
 #include <vector> // std::vector
-#include <experimental/filesystem> // fs::create_directory, fs::exists
 #include "simulated_annealing.h"
 
-namespace fs = std::experimental::filesystem;
 using namespace SA;
 
 /* DECLARATIONS */
@@ -48,9 +46,6 @@ std::string Trial::get_output_path(std::string suffix)
 	// idempotentally create dir and add to output filepath
 	if (!output_dir.empty())
 	{
-		if (!fs::exists(output_dir.c_str()))
-			fs::create_directory(output_dir.c_str());
-
 		output_fp += output_dir + SEP;
 	}
 
@@ -105,14 +100,10 @@ void SA::simann(Trial &trial)
 	init_sa(path, dist, dim);
 	trial.bestpath = path;
 
-	// optionally randomize initial values
-	if (sap.randinit)
-		if (sap.seed != -1)
-		{
-			std::srand(sap.seed);
-			std::shuffle(path.begin(), path.end(), std::default_random_engine(sap.seed));
-		} else
-			std::shuffle(path.begin(), path.end(), std::default_random_engine(std::time(0)));
+	// randomize initial values
+	std::srand(sap.seed);
+	auto gen = std::default_random_engine(sap.seed);
+	std::shuffle(path.begin(), path.end(), gen);
 
 	int j = 0;
 	int steps, neighscore, idx1, idx2, idx3;
@@ -336,7 +327,7 @@ int main()
 	/*
 	 * Example Usage:
 	 * 10 trials of NYC with 5 second cutoff and 0.95 alpha
-	 * writes solution to 'tmp'
+	 * writes solution to 'output' directory
 	 */
 	SAParams sap;
 	sap.cutoff = 5;
@@ -349,7 +340,7 @@ int main()
 		trial.sap = sap;
 		trial.input_fp = "DATA/NYC.tsp";
 		trial.verbose = true;
-		trial.output_dir = "tmp";
+		trial.output_dir = "output";
 		simann(trial);
 		trial.write_solution();
 		trial.write_trace();

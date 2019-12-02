@@ -7,20 +7,20 @@ from matplotlib.pylab import plt
 
 
 class QRTD(Plotter):
-    def __init__(self, outdir, solpath="DATA/solutions.csv", line_alpha=0.7,
-                 line_width=1.2, tick_color='0.25', bgc='0.90',
+    def __init__(self, outdir, target_loc, algo, solpath="DATA/solutions.csv",
+                 line_alpha=0.7, line_width=1.2, tick_color='0.25', bgc='0.90',
                  fc='0.60', title_color='0.15', xfmt='{x:,.2f}',
                  yfmt='{x:,.1f}', grid_style='dotted'):
-        # get trace files from given output directory
-        trace_paths = [f for f in listdir(outdir) if isfile(join(outdir, f))]
-        if len(trace_paths) == 0:
+        # get trace paths from given output directory, target_loc, algo
+        tps = [f for f in listdir(outdir) if isfile(join(outdir, f))]
+        tps = [f for f in tps if f.endswith('.trace')]
+        tps = [f for f in tps if f.startswith(f'{target_loc}_{algo}')]
+
+        if len(tps) == 0:
             raise ValueError('outdir must contain trace files')
 
-        # TSP destination ex: 'Atlanta'
-        target_loc = trace_paths[0].split('_')[0].capitalize()
-
         # cutoff in secs
-        self.cutoff = int(trace_paths[0].split('_')[2])
+        self.cutoff = int(tps[0].split('_')[2])
 
         # get optimal value from provided solutions for trace instance
         df_sol = pd.read_csv(solpath)
@@ -29,7 +29,7 @@ class QRTD(Plotter):
         # get trace entries
         cols = ['Trial', 'RT', 'Value']
         self.df_trials = pd.DataFrame(columns=cols)
-        for i, f in enumerate(trace_paths):
+        for i, f in enumerate(tps):
             df_tmp = pd.read_csv(join(outdir, f), names=["RT", "Value"])
             df_tmp['Trial'] = i+1
             self.df_trials = pd.concat([self.df_trials, df_tmp], sort=True)
@@ -39,10 +39,6 @@ class QRTD(Plotter):
         # calculate rel err for data
         self.df_trials['RE'] = (self.df_trials.Value-self.opt)/self.opt
 
-
-##        print(self.df_trials.to_numpy())
-##        print(type(self.df_trials.to_numpy()))
-        
         # init base plotter
         super().__init__(line_alpha=line_alpha, line_width=line_width,
                          tick_color=tick_color, bgc=bgc, fc=fc,
@@ -127,5 +123,6 @@ class QRTD(Plotter):
 
 if __name__ == '__main__':
     print(f'Testing SQD Plotter...')
-    plotter = QRTD("tmp2")
+##    plotter = QRTD("tmp")
+    plotter = QRTD('tmp', 'NYC', 'LS1')
     plotter.plot_qrtd()
