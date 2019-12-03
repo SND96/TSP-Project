@@ -4,21 +4,18 @@
 using namespace std;
 
 class Graph
-{
-private:
+{	public:
+
 	int V; // number of vertices
 	int total_edges; // total of edges
 	int initial_vertex; // initial vertex
 	std::map<std::pair<int, int>, int> map_edges; // map of the edges
-public:
 	Graph(int V); // constructor
 	void addEdge(int v1, int v2, int weight); // adds a edge
-	void showGraph(); // shows all the links of the graph
 	void generatesGraph(); // generates a random graph
-	void showInfoGraph(); // shows info of the graph
-	int existsEdge(int src, int dest); // checks if exists a edge
-	friend class Genetic; // to access private membres this class
 };
+
+
 typedef std::pair<std::vector<int>, int> my_pair;
 
 
@@ -52,7 +49,6 @@ private:
 	void initialPopulation(); // generates the initial population
 public:
 	Genetic(Graph* graph, int size_population, int generations, int mutation_rate, bool show_population, int** adj_mat, int start_point, chrono::high_resolution_clock::time_point startTime, string traceFilePath, string solFilePath, int cutoff); // constructor
-	// Genetic(Graph* graph, int size_population, int generations, int mutation_rate, bool show_population, int** adj_mat, int start_point); // constructor
 
 	int pathCost(std::vector<int>& solution); // returns path cost
 	void crossOver(std::vector<int>& parent1, std::vector<int>& parent2); // makes the crossover
