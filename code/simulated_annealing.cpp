@@ -310,35 +310,35 @@ int** get_adj_matrix(std::string fp, int dim)
 	return adj;
 }
 
-int main(int argc, char **argv)
-{
-	// read command line arguments
-    std::string filePath = argv[2];
-    int cutoff = atoi(argv[6]);
-    std::string method = argv[4];
-    int seed;
-    if( argc == 9 )
-        seed = atoi(argv[8]);
+// int main(int argc, char **argv)
+// {
+// 	// read command line arguments
+//     std::string filePath = argv[2];
+//     int cutoff = atoi(argv[6]);
+//     std::string method = argv[4];
+//     int seed;
+//     if( argc == 9 )
+//         seed = atoi(argv[8]);
 
-	/*
-	 * Example Usage:
-	 * 10 trials of NYC with 5 second cutoff and 0.95 alpha
-	 * writes solution to 'output' directory
-	 */
-	SAParams sap;
-	sap.cutoff = cutoff;
-	sap.alpha = 0.95;
 	
-	Trial trial;
-	sap.seed = seed;
-	trial.sap = sap;
-	trial.input_fp = "DATA/"+filePath;
-	trial.verbose = true;
-	trial.output_dir = "output";
-	simann(trial);
-	trial.write_solution();
-	trial.write_trace();
+// 	 * Example Usage:
+// 	 * 10 trials of NYC with 5 second cutoff and 0.95 alpha
+// 	 * writes solution to 'output' directory
+	 
+// 	SAParams sap;
+// 	sap.cutoff = cutoff;
+// 	sap.alpha = 0.95;
+	
+// 	Trial trial;
+// 	sap.seed = seed;
+// 	trial.sap = sap;
+// 	trial.input_fp = "DATA/"+filePath;
+// 	trial.verbose = true;
+// 	trial.output_dir = "output";
+// 	simann(trial);
+// 	trial.write_solution();
+// 	trial.write_trace();
 	
 
-	return 0;
-}
+// 	return 0;
+// }

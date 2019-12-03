@@ -1,15 +1,23 @@
-#include <iomanip>  // for setw() and ws
-#include <string>
-#include <fstream> // for file handling
-#include <cstdlib>
-#include <sstream> // for reading file
+#include <algorithm> // std::shuffle
+#include <chrono> // for time
+#include <climits> // for INT_MAX
 #include <cmath>
 #include <cstring>
 #include <cstdio>
+#include <ctime> // std::clock
+#include <cstdlib>
+#include <fstream> // for file handling
 #include <iostream>
-#include <climits> // for INT_MAX
-#include <chrono> // for time
+#include <iomanip>  // for setw() and ws
+#include <iterator> // std::ostream_iterator
+#include <numeric> // std::iota
+#include <random> // std::random_device, std::mt19937
+#include <string>
+#include <sstream> // for reading file
+#include <vector>
+
 #include "bnb.h"
+#include "simulated_annealing.h"
 
 using namespace std;
 
@@ -18,6 +26,10 @@ int main(int argc, char**argv)
     // read command line arguments
     string filePath = argv[2];
     int cutoff = atoi(argv[6]);
+    if(cutoff==0)
+    {
+        exit(0);
+    }
     string method = argv[4];
     int seed;
     if( argc == 9 )
@@ -70,7 +82,19 @@ int main(int argc, char**argv)
         case 1: {// call approx
                     break;
                 }
-        case 2: {// call LS1
+        case 2: {
+                    SA::SAParams sap;
+                    sap.cutoff = cutoff;
+                    sap.alpha = 0.95;
+                    SA::Trial trial;
+                    sap.seed = seed;
+                    trial.sap = sap;
+                    trial.input_fp = "DATA/"+filePath;
+                    trial.verbose = true;
+                    trial.output_dir = "output";
+                    simann(trial);
+                    trial.write_solution();
+                    trial.write_trace();
                     break;
                 }
         case 3: {// call LS2
