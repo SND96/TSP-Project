@@ -1,5 +1,5 @@
 DATA
-a.out
+*.out
 sa.o*
 output
 .vscode
@@ -7,5 +7,3 @@ Untitled.ipynb
 .ipynb_checkpoints
 __pycache__
 .DS_STORE
-*.sol
-*.trace
