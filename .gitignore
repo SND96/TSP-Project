@@ -1,7 +1,6 @@
 DATA
 *.out
 sa.o*
-output
 .vscode
 Untitled.ipynb
 .ipynb_checkpoints
