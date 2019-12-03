@@ -13,199 +13,100 @@
 // for adjacency matrix representation of the graph 
 #include <iostream>
 #include <string>
+#include "prim_dfs.h"
 using namespace std;
 
-// Number of vertices in the graph  
-//#define V 5  
 
 
-class Approximation{
-
-	public:
-		int V;
-		int infinity;
-		struct AdjListNode {
-				int dest;
-				int weight;
-				struct AdjListNode* next;
-			};
-		
-		// A structure to represent an adjacency list 
-		struct AdjList {
-			struct AdjListNode* head; // pointer to head node of list 
-		};
-
-		// A structure to represent a graph. A graph is an array of adjacency lists. 
-		// Size of array will be V (number of vertices in graph) 
-		struct Graph {
-			int V;
-			struct AdjList* array;
-		};
-
-		// A utility function to create a new adjacency list node 
-		struct AdjListNode* newAdjListNode(int dest, int weight)
-		{
-			struct AdjListNode* newNode = (struct AdjListNode*)malloc(sizeof(struct AdjListNode));
-			newNode->dest = dest;
-			newNode->weight = weight;
-			newNode->next = NULL;
-			return newNode;
-		}
-
-		// A utility function that creates a graph of V vertices 
-		struct Graph* createGraph()
-		{
-			struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
-			graph->V = V;
-
-			// Create an array of adjacency lists.  Size of array will be V 
-			graph->array = (struct AdjList*)malloc(V * sizeof(struct AdjList));
-
-			// Initialize each adjacency list as empty by making head as NULL 
-			for (int i = 0; i < V; ++i)
-				graph->array[i].head = NULL;
-
-			return graph;
-		}
-	// Adds an edge to an undirected graph 
-		void addEdge(struct Graph* graph, int src, int dest, int weight)
-		{
-			// Add an edge from src to dest.  A new node is added to the adjacency 
-			// list of src.  The node is added at the begining 
-			struct AdjListNode* newNode = newAdjListNode(dest, weight);
-			newNode->next = graph->array[src].head;
-			graph->array[src].head = newNode;
-
-			// Since graph is undirected, add an edge from dest to src also 
-			newNode = newAdjListNode(src, weight);
-			newNode->next = graph->array[dest].head;
-			graph->array[dest].head = newNode;
-		}
-	
-
-};
-
-///////////////////////////////////////////////////
-///////////////////////////////////////////////////
-///////////////////////////////////////////////////
-class Prim_MST : public Approximation
+Prim_MST::Prim_MST(int V)
 {
-	public:
-	// A utility function to find the vertex with  
-	// minimum key value, from the set of vertices  
-	// not yet included in MST  
-		Prim_MST(int V)
-		{
-			this->V = V;
-			infinity = 10e8;
-		}
-		int minKey(int *key, bool *mstSet)
-		{
-			// Initialize min value  
-			int min = infinity, min_index;
-
-			for (int v = 0; v < V; v++)
-				if (mstSet[v] == false && key[v] < min)
-					min = key[v], min_index = v;
-
-			return min_index;
-		}
-
-		// A utility function to print the  
-		// constructed MST stored in parent[]  
-		void createMST(int parent[], int** graph, struct Approximation::Graph* mst)
-		{
-			cout << "Edge \tWeight\n";
-			for (int i = 1; i < V; i++)
-			{
-				// cout << parent[i] << " - " << i << " \t" << graph[i][parent[i]] << " \n";
-				addEdge(mst, parent[i], i, graph[i][parent[i]]);
-
-			}
-		}
-
-		// Function to construct and print MST for  
-		// a graph represented using adjacency  
-		// matrix representation  
-		void primMST(int** graph, struct Graph* mst)
-		{
-			// Array to store constructed MST  
-			//int parent[V];
-			int *parent = new int[V];
-
-			// Key values used to pick minimum weight edge in cut  
-			//int key[V];
-			int *key = new int[V];
-
-			// To represent set of vertices not yet included in MST  
-			//bool mstSet[V];
-			bool *mstSet = new bool[V];
-
-			// Initialize all keys as INFINITE  
-			for (int i = 0; i < V; i++)
-				key[i] = infinity, mstSet[i] = false;
-
-			// Always include first 1st vertex in MST.  
-			// Make key 0 so that this vertex is picked as first vertex.  
-			key[0] = 0;
-			parent[0] = -1; // First node is always root of MST  
-
-							// The MST will have V vertices  
-			for (int count = 0; count < V - 1; count++)
-			{
-				// Pick the minimum key vertex from the  
-				// set of vertices not yet included in MST  
-				int u = minKey(key, mstSet);
-
-				// Add the picked vertex to the MST Set  
-				mstSet[u] = true;
-
-				// Update key value and parent index of  
-				// the adjacent vertices of the picked vertex.  
-				// Consider only those vertices which are not  
-				// yet included in MST  
-				for (int v = 0; v < V; v++)
-
-					// graph[u][v] is non zero only for adjacent vertices of m  
-					// mstSet[v] is false for vertices not yet included in MST  
-					// Update the key only if graph[u][v] is smaller than key[v]  
-					if (graph[u][v] && mstSet[v] == false && graph[u][v] < key[v])
-						parent[v] = u, key[v] = graph[u][v];
-			}
-
-			// print the constructed MST  
-			createMST(parent, graph, mst);
-		}
-
-};
-
-///////////////////////////////////////////////////
-///////////////////////////////////////////////////
-///////////////////////////////////////////////////
-class Graph_DFS: public Approximation
+	this->V = V;
+	infinity = 10e8;
+}
+int Prim_MST::minKey(int *key, bool *mstSet)
 {
-	int V;    // No. of vertices 
+	// Initialize min value  
+	int min = infinity, min_index;
 
-			  // Pointer to an array containing 
-			  // adjacency lists 
-	struct AdjList* array;
-	int counterTemp;
+	for (int v = 0; v < V; v++)
+		if (mstSet[v] == false && key[v] < min)
+			min = key[v], min_index = v;
 
-	// A recursive function used by DFS 
-	void DFSUtil(int v, bool visited[], int* dfsPath);
-public:
-	Graph_DFS(int V, struct AdjList* array);   // Constructor 
+	return min_index;
+}
 
-											// function to add an edge to graph 
-											//void addEdge(int v, int w);
+// A utility function to print the  
+// constructed MST stored in parent[]  
+void Prim_MST::createMST(int parent[], int** graph, struct Approximation::Graph* mst)
+{
+	for (int i = 1; i < V; i++)
+	{
+		// cout << parent[i] << " - " << i << " \t" << graph[i][parent[i]] << " \n";
+		addEdge(mst, parent[i], i, graph[i][parent[i]]);
 
-											// DFS traversal of the vertices 
-											// reachable from v 
-	void DFS(int v, int* dfsPath);
-};
+	}
+}
+
+// Function to construct and print MST for  
+// a graph represented using adjacency  
+// matrix representation  
+void Prim_MST::primMST(int** graph, struct Graph* mst)
+{
+	// Array to store constructed MST  
+	//int parent[V];
+	int *parent = new int[V];
+
+	// Key values used to pick minimum weight edge in cut  
+	//int key[V];
+	int *key = new int[V];
+
+	// To represent set of vertices not yet included in MST  
+	//bool mstSet[V];
+	bool *mstSet = new bool[V];
+
+	// Initialize all keys as INFINITE  
+	for (int i = 0; i < V; i++)
+		key[i] = infinity, mstSet[i] = false;
+
+	// Always include first 1st vertex in MST.  
+	// Make key 0 so that this vertex is picked as first vertex.  
+	key[0] = 0;
+	parent[0] = -1; // First node is always root of MST  
+
+					// The MST will have V vertices  
+	for (int count = 0; count < V - 1; count++)
+	{
+		// Pick the minimum key vertex from the  
+		// set of vertices not yet included in MST  
+		int u = minKey(key, mstSet);
+
+		// Add the picked vertex to the MST Set  
+		mstSet[u] = true;
+
+		// Update key value and parent index of  
+		// the adjacent vertices of the picked vertex.  
+		// Consider only those vertices which are not  
+		// yet included in MST  
+		for (int v = 0; v < V; v++)
+
+			// graph[u][v] is non zero only for adjacent vertices of m  
+			// mstSet[v] is false for vertices not yet included in MST  
+			// Update the key only if graph[u][v] is smaller than key[v]  
+			if (graph[u][v] && mstSet[v] == false && graph[u][v] < key[v])
+				parent[v] = u, key[v] = graph[u][v];
+	}
+
+	// print the constructed MST  
+	createMST(parent, graph, mst);
+}
+
+
+///////////////////////////////////////////////////
+///////////////////////////////////////////////////
+///////////////////////////////////////////////////
 
 Graph_DFS::Graph_DFS(int V, struct AdjList* array)
-{
+{	
 	this->V = V;
 	this->array = array;
 	counterTemp = 0;
@@ -325,7 +226,6 @@ int main(int argc, char**argv)
     // read command line arguments
     string filePath = argv[2];
     int cutoff = atoi(argv[6]);
-    cout<<cutoff;
     string method = argv[4];
     int seed;
     if( argc == 9 )
@@ -361,11 +261,10 @@ int main(int argc, char**argv)
 	int mstV = dim-1;
 	srand(3);
 	int startingVertex = rand()%dim;
-	cout<<startingVertex<<endl;
 	Graph_DFS g(dim, mst->array);
 
 	cout << "Following is Depth First Traversal"
-		" (starting from vertex 0) \n";
+		" (starting from vertex "<<startingVertex<< endl;
 
 	g.DFS(startingVertex, dfsPath);
 	double sumOfEdges = 0.0;
