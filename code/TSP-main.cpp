@@ -11,17 +11,21 @@
 #include <iomanip>  // for setw() and ws
 #include <iterator> // std::ostream_iterator
 #include <math.h>
+#include <map>
 #include <numeric> // std::iota
 #include <random> // std::random_device, std::mt19937
 #include <string>
+#include <set>
 #include <sstream> // for reading file
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
 
+
 #include "bnb.h"
 #include "prim_dfs.h"
 #include "simulated_annealing.h"
+#include "genetic_algo.h"
 
 using namespace std;
 
@@ -60,10 +64,6 @@ int main(int argc, char**argv)
     {
         method_num = 3;
     }
-    else
-    {
-        method_num = 4;
-    }
 
     // making note of start time of execution
     chrono::high_resolution_clock::time_point startTime = chrono::high_resolution_clock::now();
@@ -90,19 +90,19 @@ int main(int argc, char**argv)
                     break;
                 }
         case 1: {  
-                    if(flag == 1)
-                    {
-                        traceFilePath = traceFilePath + "_" + to_string(seed) +".trace";
-                        solFilePath = solFilePath + "_" + to_string(seed) +".sol";
-                    }
+                    // if(flag == 1)
+                    // {
+                    //     traceFilePath = traceFilePath + "_" + to_string(seed) +".trace";
+                    //     solFilePath = solFilePath + "_" + to_string(seed) +".sol";
+                    // }
                     Prim_MST mst_obj(V);
                     struct Approximation::Graph* mst = mst_obj.createGraph();
                     mst_obj.primMST(adj, mst);
                     int *dfsPath = new int[V];
-                    srand(cutoff);
-                    int startingVertex = rand()%V;
+                    // srand(seed);
+                    // int startingVertex = rand()%V;
                     Graph_DFS g(V, mst->array);
-                    g.DFS(startingVertex, dfsPath);
+                    g.DFS(0, dfsPath);
                     double sumOfEdges = 0.0;
                     for (int i = 0; i < V-1; i++)
                     {
@@ -148,10 +148,23 @@ int main(int argc, char**argv)
                     trial.write_trace();
                     break;
                 }
-        case 3: {// call LS2
+        case 3: {   if(flag == 1)
+                    {
+                        traceFilePath = traceFilePath + "_" + to_string(seed) +".trace";
+                        solFilePath = solFilePath + "_" + to_string(seed) +".sol";
+                    }
+                    Graph * graph1 = new Graph(V);
+                    for(int i=0;i<V; i++)
+                        for(int j =0; j<V; j++)
+                        {
+                            graph1->addEdge(i,j,adj[i][j]);
+                        }
+
+                    Genetic gen(graph1, 10, 1000000, 5, true, adj,  0, startTime, traceFilePath, solFilePath, cutoff);
+                    gen.run(); 
                     break;
                 }
-        case 4: {
+        default: {
                     cout<<"Incorrect input";
                     break;
                 }
