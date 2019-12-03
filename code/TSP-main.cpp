@@ -1,3 +1,4 @@
+// main function to run TSP using 4 different algos
 #include <algorithm> // std::shuffle
 #include <chrono> // for time
 #include <climits> // for INT_MAX
@@ -90,23 +91,17 @@ int main(int argc, char**argv)
                     break;
                 }
         case 1: {  
-                    // if(flag == 1)
-                    // {
-                    //     traceFilePath = traceFilePath + "_" + to_string(seed) +".trace";
-                    //     solFilePath = solFilePath + "_" + to_string(seed) +".sol";
-                    // }
+                    traceFilePath = traceFilePath + ".trace";
+                    solFilePath = solFilePath + ".sol";
                     Prim_MST mst_obj(V);
                     struct Approximation::Graph* mst = mst_obj.createGraph();
                     mst_obj.primMST(adj, mst);
                     int *dfsPath = new int[V];
-                    // srand(seed);
-                    // int startingVertex = rand()%V;
                     Graph_DFS g(V, mst->array);
                     g.DFS(0, dfsPath);
                     double sumOfEdges = 0.0;
                     for (int i = 0; i < V-1; i++)
                     {
-                        // cout << dfsPath[i] << endl;
                         sumOfEdges += adj[dfsPath[i]][dfsPath[i + 1]];
                     }
                     sumOfEdges += adj[dfsPath[V - 1]][dfsPath[0]];
@@ -161,7 +156,6 @@ int main(int argc, char**argv)
                         {
                             graph1->addEdge(i,j,adj[i][j]);
                         }
-
                     Genetic gen(graph1, 10, 10000000, 5, true, adj,  0, startTime, traceFilePath, solFilePath, cutoff);
                     gen.run(); 
                     break;
