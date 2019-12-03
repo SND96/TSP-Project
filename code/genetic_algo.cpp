@@ -2,13 +2,13 @@
 
 #include <iostream>
 #include <cmath>
-#include <algorithm> // sort, next_permutation
+#include <algorithm> 
 #include <vector>
 #include <map>
 #include <set>
-#include <utility> // pair
-#include <time.h> // time
-#include <stdlib.h> // srand, rand
+#include <utility> 
+#include <time.h> 
+#include <stdlib.h> 
 #include <string>
 #include <fstream>
 #include <cstdlib>
@@ -82,11 +82,6 @@ void Graph::addEdge(int src, int dest, int weight) // add a edge
 {
 	map_edges[make_pair(src, dest)] = weight; // adds edge in the map
 }
-
-
-
-
-
 
 // constructor of Genetic
 	Genetic::	Genetic(Graph* graph, int size_population, int generations, int mutation_rate, bool show_population, int** adj_mat, int start_point, chrono::high_resolution_clock::time_point startTime, string traceFilePath, string solFilePath, int cutoff) // constructor
@@ -190,7 +185,7 @@ void Genetic::initialPopulation() // generates the initial population
 		// generates a random permutation
 		random_shuffle(parent.begin() + 1, parent.begin() + (rand() % (graph->V - 1) + 1));
 		
-		int total_cost = pathCost(parent); // checks if solution is valid
+		int total_cost = pathCost(parent); 
 		
 		// checks if permutation is a valid solution and if not exists
 		if(total_cost != -1 && !existsChromosome(parent))
@@ -259,7 +254,7 @@ void Genetic::crossOver(vector<int>& parent1, vector<int>& parent2)
 			point2++;
 		else
 		{
-			// point1 or point2 ?? random...
+			// point1 or point2 ?? Mutate
 			int point = rand() % 10 + 1; // number in the range 1 to 10
 			if(point <= 5)
 				point1--;
@@ -308,7 +303,7 @@ void Genetic::crossOver(vector<int>& parent1, vector<int>& parent2)
 				{
 					child1.push_back(it->first);
 					genes1[it->first] = 1; // marks as used
-					break; // left the loop
+					break;
 				}
 			}
 		}
@@ -327,13 +322,13 @@ void Genetic::crossOver(vector<int>& parent1, vector<int>& parent2)
 				{
 					child2.push_back(it->first);
 					genes2[it->first] = 1; // marks as used
-					break; // left the loop
+					break; 
 				}
 			}
 		}
 	}
 	
-	// ramaining genes: child1 receives genes of the parent1
+	// remaining genes: child1 receives genes of the parent1
 	// and child2 receives genes of the parent2
 	for(int i = point2 + 1; i < graph->V; i++)
 	{
@@ -342,7 +337,7 @@ void Genetic::crossOver(vector<int>& parent1, vector<int>& parent2)
 	}
 		
 	// mutation
-	int mutation = rand() % 100 + 1; // random number in [1,100]
+	int mutation = rand() % 100 + 1; 
 	if(mutation <= mutation_rate) // checks if the random number <= mutation rate
 	{
 		// makes a mutation: change of two genes
@@ -351,15 +346,13 @@ void Genetic::crossOver(vector<int>& parent1, vector<int>& parent2)
 		index_gene1 = rand() % (graph->V - 1) + 1;
 		index_gene2 = rand() % (graph->V - 1) + 1;
 		
-		// makes for child1
-		int aux = child1[index_gene1];
+		int mut_gene = child1[index_gene1];
 		child1[index_gene1] = child1[index_gene2];
-		child1[index_gene2] = aux;
+		child1[index_gene2] = mut_gene;
 		
-		// makes for child2
-		aux = child2[index_gene1];
+		mut_gene = child2[index_gene1];
 		child2[index_gene1] = child2[index_gene2];
-		child2[index_gene2] = aux;
+		child2[index_gene2] = mut_gene;
 	}
 	
 	int total_cost_child1 = pathCost(child1);
@@ -373,7 +366,6 @@ void Genetic::crossOver(vector<int>& parent1, vector<int>& parent2)
 		real_size_population++; // increments the real_size_population
 	}
 	
-	// checks again...
 	if(total_cost_child2 != -1 && !existsChromosome(child2))
 	{
 		// add child in the population
@@ -393,7 +385,7 @@ void Genetic::run()
 	if(real_size_population == 0)
 		return;
 
-	for(int i = 0; i < generations; i++)
+	while(1)
 	{
 		int elapsed = (chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now() - startTime).count())/1000000.0;
 		// check if cutoff time reached
@@ -425,7 +417,6 @@ void Genetic::run()
 					parent1 = rand() % real_size_population;
 					parent2 = rand() % real_size_population;
 				}while(parent1 == parent2);
-				
 				// applying crossover in the two parents
 				crossOver(population[parent1].first, population[parent2].first);
 			}
@@ -470,7 +461,6 @@ void Genetic::run()
 			writeToOutputFile();
 	}
 	
-	exit(0);
 	
 
 }
