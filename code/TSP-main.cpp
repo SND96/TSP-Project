@@ -31,7 +31,7 @@ int main(int argc, char**argv)
         exit(0);
     }
     string method = argv[4];
-    int seed;
+    int seed = 0;
     if( argc == 9 )
         seed = atoi(argv[8]);
     int method_num;

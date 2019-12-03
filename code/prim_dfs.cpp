@@ -8,16 +8,9 @@
 #include <fstream>
 #include <cstdlib>
 #include <sstream>
-// A C++ program for Prim's Minimum  
-// Spanning Tree (MST) algorithm. The program is  
-// for adjacency matrix representation of the graph 
 #include <iostream>
 #include <string>
 using namespace std;
-
-// Number of vertices in the graph  
-//#define V 5  
-
 
 class Approximation{
 
@@ -85,9 +78,6 @@ class Approximation{
 
 };
 
-///////////////////////////////////////////////////
-///////////////////////////////////////////////////
-///////////////////////////////////////////////////
 class Prim_MST : public Approximation
 {
 	public:
@@ -179,9 +169,6 @@ class Prim_MST : public Approximation
 
 };
 
-///////////////////////////////////////////////////
-///////////////////////////////////////////////////
-///////////////////////////////////////////////////
 class Graph_DFS: public Approximation
 {
 	int V;    // No. of vertices 
@@ -248,9 +235,6 @@ void Graph_DFS::DFS(int v, int* dfsPath)
 	// to print DFS traversal 
 	DFSUtil(v, visited, dfsPath);
 }
-/////////////////////////////////////////////////////
-///////////////////////////////////////////////////
-///////////////////////////////////////////////////
 
 // Helper Functions to read input
 int** getAdjMatrix(string filePath, int dim)
@@ -318,7 +302,6 @@ int getDim(string filePath)
 	}
 	return dim;
 }
-///////////////////////////////////////////////////
 // Driver code 
 int main(int argc, char**argv)
 {
@@ -357,8 +340,6 @@ int main(int argc, char**argv)
 
 	int *dfsPath = new int[dim];
 
-
-	int mstV = dim-1;
 	srand(3);
 	int startingVertex = rand()%dim;
 	cout<<startingVertex<<endl;
