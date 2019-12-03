@@ -159,7 +159,6 @@ int main(int argc, char**argv)
                         {
                             graph1->addEdge(i,j,adj[i][j]);
                         }
-
                     Genetic gen(graph1, 10, 1000000, 5, true, adj,  0, startTime, traceFilePath, solFilePath, cutoff);
                     gen.run(); 
                     break;
