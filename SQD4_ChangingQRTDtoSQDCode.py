@@ -2,7 +2,7 @@ from os import listdir
 from os.path import isfile, join
 import pandas as pd
 import numpy as np
-from Plotter import Plotter
+from PlotterForSQD import Plotter
 
 
 class QRTD(Plotter):
@@ -172,9 +172,9 @@ class QRTD(Plotter):
                 title = f'Qualified RTD ({self.target_loc})'
 
             self.plot(X, Y, labels=labels, xax_label=xax_label,
-                      yax_label=yax_label, colors=['b', 'g', 'r', 'c', 'r'], title="SQD",
+                      yax_label=yax_label, colors=['b', 'g', 'r', 'c', 'y'], title="SQD",
                       should_show=should_show, should_save=should_save,
-                      save_path=save_path,xscale=xscale)
+                      save_path=save_path,xscale=xscale, linestyles = ['-','--','-.',':', '-'])
 
 if __name__ == '__main__':
     """

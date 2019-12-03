@@ -1,6 +1,7 @@
 // code for approximation algorithm
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <iomanip>  // for setw() and ws
 #include <string>
@@ -358,7 +359,9 @@ int main(int argc, char**argv)
 
 
 	int mstV = dim-1;
-	int startingVertex = 0;
+	srand(3);
+	int startingVertex = rand()%dim;
+	cout<<startingVertex<<endl;
 	Graph_DFS g(dim, mst->array);
 
 	cout << "Following is Depth First Traversal"
@@ -373,9 +376,9 @@ int main(int argc, char**argv)
 	}
 	cout<<endl;
 	sumOfEdges += adj[dfsPath[dim - 1]][dfsPath[0]];
-	double opt = 277952.0;
+	// double opt = 655454.0;
 	cout << "Path Cost = " << (sumOfEdges) << endl;
-	cout << "Approximation Ratio = " << (sumOfEdges/opt) << endl;
+	// cout << "Approximation Ratio = " << (sumOfEdges/opt) << endl;
 
 	return 0;
 }
