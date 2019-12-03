@@ -386,7 +386,6 @@ void Genetic::crossOver(vector<int>& parent1, vector<int>& parent2)
 // runs the genetic algorithm
 void Genetic::run()
 {
-	// check if cutoff time reached
 
 
 	initialPopulation(); // gets initial population
@@ -397,6 +396,8 @@ void Genetic::run()
 	for(int i = 0; i < generations; i++)
 	{
 		int elapsed = (chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now() - startTime).count())/1000000.0;
+		// check if cutoff time reached
+
 		if (elapsed>=cutoff)
     	{
         	break;
@@ -464,11 +465,7 @@ void Genetic::run()
 				real_size_population--; // decrements the real_size_population in the unit
 			}
 		}
-		// const vector<int>& vec = population[0].first;
-		// for(int i = 0; i < graph->V; i++)
-		// 	cout << vec[i] << " ";
-		// cout << start_point;
-		// cout << " | Cost: " << population[0].second;
+
 		if(population[0].second < current_best)
 			writeToOutputFile();
 	}
