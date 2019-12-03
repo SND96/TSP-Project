@@ -73,7 +73,7 @@ class QRTD(Plotter):
     def build(self, times=np.array([0.1,0.3,1,3.2,10]), maxSolQualPerc = 20, solutQualPercInterval = 0.1, xscale=None,
               yax_label='P(solve)', xax_label='Relative Solution Quality (%)',
               title=None, labels=None, colors=['b', 'g', 'r', 'c'],
-              should_show=False, should_save=False, save_path=None):
+              should_show=False, should_save=False, save_path=None, linestyles = ['-','--','-.',':', '-']):
 ##        """
 ##        params:
 ##        - sqs: solution quality plot lines
@@ -172,13 +172,17 @@ class QRTD(Plotter):
                 title = f'Qualified RTD ({self.target_loc})'
 
             self.plot(X, Y, labels=labels, xax_label=xax_label,
-                      yax_label=yax_label, colors=['b', 'g', 'r', 'c', 'y'], title="SQD",
+                      yax_label=yax_label, colors=colors, title=title,
                       should_show=should_show, should_save=should_save,
-                      save_path=save_path,xscale=xscale, linestyles = ['-','--','-.',':', '-'])
+                      save_path=save_path,xscale=xscale, linestyles = linestyles)
 
 if __name__ == '__main__':
     """
     Example: QRTD plot for simulated annealing NYC results
     """
-    plotter = QRTD('tmp2', 'NYC', 'LS1')
-    plotter.build(times=np.array([0.1,0.3,1,3.2,10]), maxSolQualPerc = 20, solutQualPercInterval = 0.1, should_show=True, xscale=None)
+    City = 'Champaign'
+    Algorithm = 'LS1'
+    plotter = QRTD('output', City, Algorithm)
+    #plotter.build(times=np.array([0.1,0.3,1, 3.2,10]), colors=['b', 'g', 'r', 'c', 'y'], linestyles = ['-','--','-.',':', '-'], maxSolQualPerc = 40, solutQualPercInterval = 0.1, should_show=True, xscale=None)
+    plotter.build(title = 'SQD_' + City +'_' + Algorithm,times=np.array([0.1,0.6, 0.7, 1, 3.2,10]), colors=['g', 'r', 'c', 'y', 'b', 'g'], linestyles = ['--','-.',':', '-','-.',':'], maxSolQualPerc = 40, solutQualPercInterval = 0.1, should_show=True, xscale=None)
+    #0.1, 0.6, 
