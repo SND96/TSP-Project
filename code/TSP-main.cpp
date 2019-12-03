@@ -10,13 +10,17 @@
 #include <iostream>
 #include <iomanip>  // for setw() and ws
 #include <iterator> // std::ostream_iterator
+#include <math.h>
 #include <numeric> // std::iota
 #include <random> // std::random_device, std::mt19937
 #include <string>
 #include <sstream> // for reading file
+#include <stdio.h>
+#include <stdlib.h>
 #include <vector>
 
 #include "bnb.h"
+#include "prim_dfs.h"
 #include "simulated_annealing.h"
 
 using namespace std;
@@ -26,6 +30,7 @@ int main(int argc, char**argv)
     // read command line arguments
     string filePath = argv[2];
     int cutoff = atoi(argv[6]);
+    int flag = 0;
     if(cutoff==0)
     {
         exit(0);
@@ -33,7 +38,10 @@ int main(int argc, char**argv)
     string method = argv[4];
     int seed = 0;
     if( argc == 9 )
+    {
         seed = atoi(argv[8]);
+        flag = 1;
+    }
     int method_num;
     // assigning a number to each method
     if(method=="BnB")
@@ -63,9 +71,9 @@ int main(int argc, char**argv)
     // find file paths
     string inputFilePath = "./DATA/" + filePath;
     string instance = filePath.substr(0, filePath.size()-4);
-    string traceFilePath = "./output/" + instance + "_" + method + "_" + to_string(cutoff) + ".trace";
-    string solFilePath = "./output/" + instance + "_" + method + "_" + to_string(cutoff) + ".sol";
-
+    string traceFilePath = "./output/" + instance + "_" + method + "_" + to_string(cutoff);
+    string solFilePath = "./output/" + instance + "_" + method + "_" + to_string(cutoff);
+    
     // calling the function to find number of vertices
     int V = getDim(inputFilePath);
     
@@ -75,11 +83,54 @@ int main(int argc, char**argv)
     switch(method_num)
     {
         case 0: {
+                    traceFilePath = traceFilePath + ".trace";
+                    solFilePath = solFilePath + ".sol";
                     TSP_BNB obj(V);
                     obj.BNB(adj, &obj.final_res, obj.visited, obj.final_path, startTime, traceFilePath, solFilePath, cutoff); 
                     break;
                 }
-        case 1: {// call approx
+        case 1: {  
+                    if(flag == 1)
+                    {
+                        traceFilePath = traceFilePath + "_" + to_string(seed) +".trace";
+                        solFilePath = solFilePath + "_" + to_string(seed) +".sol";
+                    }
+                    Prim_MST mst_obj(V);
+                    struct Approximation::Graph* mst = mst_obj.createGraph();
+                    mst_obj.primMST(adj, mst);
+                    int *dfsPath = new int[V];
+                    srand(cutoff);
+                    int startingVertex = rand()%V;
+                    Graph_DFS g(V, mst->array);
+                    g.DFS(startingVertex, dfsPath);
+                    double sumOfEdges = 0.0;
+                    for (int i = 0; i < V-1; i++)
+                    {
+                        // cout << dfsPath[i] << endl;
+                        sumOfEdges += adj[dfsPath[i]][dfsPath[i + 1]];
+                    }
+                    sumOfEdges += adj[dfsPath[V - 1]][dfsPath[0]];
+                    ofstream tracefile;
+                    ofstream solfile;
+                    // open trace file in append mode
+                    tracefile.open(traceFilePath, ios_base::app);
+                    solfile.open(solFilePath);
+                    chrono::high_resolution_clock::time_point currTime = chrono::high_resolution_clock::now(); 
+                    float diff = round((chrono::duration_cast<chrono::microseconds>(currTime - startTime).count())/10000.0)/100.0;
+                    // check if cutoff time exceeded
+                    if(diff>=cutoff)
+                    {
+                        solfile.close();
+                        tracefile.close();
+                        exit(0);
+                    }
+                    tracefile<<diff<<","<<sumOfEdges<<"\n";
+                    solfile<<sumOfEdges<<"\n";
+                    for(int i=0;i<V;i++)
+                        solfile<<dfsPath[i]<<",";
+                    solfile<<dfsPath[0];
+                    solfile.close();
+                    tracefile.close();
                     break;
                 }
         case 2: {

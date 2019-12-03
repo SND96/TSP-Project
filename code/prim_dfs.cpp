@@ -1,16 +1,14 @@
 // code for approximation algorithm
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <math.h>
+#include <cmath>
 #include <iomanip>  // for setw() and ws
 #include <string>
 #include <fstream>
 #include <cstdlib>
 #include <sstream>
-// A C++ program for Prim's Minimum  
-// Spanning Tree (MST) algorithm. The program is  
-// for adjacency matrix representation of the graph 
 #include <iostream>
 #include <string>
 #include "prim_dfs.h"
@@ -100,11 +98,6 @@ void Prim_MST::primMST(int** graph, struct Graph* mst)
 	createMST(parent, graph, mst);
 }
 
-
-///////////////////////////////////////////////////
-///////////////////////////////////////////////////
-///////////////////////////////////////////////////
-
 Graph_DFS::Graph_DFS(int V, struct AdjList* array)
 {	
 	this->V = V;
@@ -118,7 +111,6 @@ void Graph_DFS::DFSUtil(int v, bool visited[], int* dfsPath)
 	// Mark the current node as visited and 
 	// print it 
 	visited[v] = true;
-	cout << v << " ";
 	dfsPath[counterTemp] = v;
 	counterTemp++;
 
@@ -149,135 +141,129 @@ void Graph_DFS::DFS(int v, int* dfsPath)
 	// to print DFS traversal 
 	DFSUtil(v, visited, dfsPath);
 }
-/////////////////////////////////////////////////////
-///////////////////////////////////////////////////
-///////////////////////////////////////////////////
 
 // Helper Functions to read input
-int** getAdjMatrix(string filePath, int dim)
-{
-	string line;
-	ifstream tsp_inp;
-	tsp_inp.open(filePath);
-	int count_line = 0, i;
+// int** getAdjMatrix(string filePath, int dim)
+// {
+// 	string line;
+// 	ifstream tsp_inp;
+// 	tsp_inp.open(filePath);
+// 	int count_line = 0, i;
 
-	double** coord = new double*[dim];
-	for (i = 0; i < dim; ++i)
-		coord[i] = new double[2];
-	i = 0;
-	if (tsp_inp.is_open()){
-		while (getline(tsp_inp, line)){
-			count_line += 1;
-			if ((count_line >= 6) && (count_line < (dim + 6))){
-				istringstream iss(line);
-				int a;
-				double b, c;
-				if (iss >> a >> b >> c) {
-					coord[i][0] = b;
-					coord[i][1] = c;
-					i++;
-				}
-			}
-		}
-	}
-	tsp_inp.close();
-	int** adj = new int*[dim];
+// 	double** coord = new double*[dim];
+// 	for (i = 0; i < dim; ++i)
+// 		coord[i] = new double[2];
+// 	i = 0;
+// 	if (tsp_inp.is_open()){
+// 		while (getline(tsp_inp, line)){
+// 			count_line += 1;
+// 			if ((count_line >= 6) && (count_line < (dim + 6))){
+// 				istringstream iss(line);
+// 				int a;
+// 				double b, c;
+// 				if (iss >> a >> b >> c) {
+// 					coord[i][0] = b;
+// 					coord[i][1] = c;
+// 					i++;
+// 				}
+// 			}
+// 		}
+// 	}
+// 	tsp_inp.close();
+// 	int** adj = new int*[dim];
 
-	for (i = 0; i < dim; ++i)
-		adj[i] = new int[dim];
+// 	for (i = 0; i < dim; ++i)
+// 		adj[i] = new int[dim];
 
-	for (i = 0; i < dim; i++)
-		for (int j = 0; j <= i; j++) {
-			if (i == j)
-				adj[i][j] = 0;
-			else
-				adj[j][i] = adj[i][j] = round(sqrt((coord[i][0] - coord[j][0])*(coord[i][0] - coord[j][0]) + (coord[i][1] - coord[j][1])*(coord[i][1] - coord[j][1])));
-		}
+// 	for (i = 0; i < dim; i++)
+// 		for (int j = 0; j <= i; j++) {
+// 			if (i == j)
+// 				adj[i][j] = 0;
+// 			else
+// 				adj[j][i] = adj[i][j] = round(sqrt((coord[i][0] - coord[j][0])*(coord[i][0] - coord[j][0]) + (coord[i][1] - coord[j][1])*(coord[i][1] - coord[j][1])));
+// 		}
 
-	return adj;
-}
+// 	return adj;
+// }
 
-int getDim(string filePath)
-{
-	string line;
-	ifstream tsp_inp;
-	tsp_inp.open(filePath);
-	int count_line = 0, dim;
-	if (tsp_inp.is_open())
-	{
-		while (getline(tsp_inp, line))
-		{
-			count_line += 1;
-			if (count_line == 3)
-			{
-				istringstream iss(line);
-				string s;
-				if (iss >> s >> dim)
-					break;
-			}
-		}
-	}
-	return dim;
-}
-///////////////////////////////////////////////////
-// Driver code 
-int main(int argc, char**argv)
-{
-    // read command line arguments
-    string filePath = argv[2];
-    int cutoff = atoi(argv[6]);
-    string method = argv[4];
-    int seed;
-    if( argc == 9 )
-        seed = atoi(argv[8]);
+// int getDim(string filePath)
+// {
+// 	string line;
+// 	ifstream tsp_inp;
+// 	tsp_inp.open(filePath);
+// 	int count_line = 0, dim;
+// 	if (tsp_inp.is_open())
+// 	{
+// 		while (getline(tsp_inp, line))
+// 		{
+// 			count_line += 1;
+// 			if (count_line == 3)
+// 			{
+// 				istringstream iss(line);
+// 				string s;
+// 				if (iss >> s >> dim)
+// 					break;
+// 			}
+// 		}
+// 	}
+// 	return dim;
+// }
+// // Driver code 
+// int main(int argc, char**argv)
+// {
+//     // read command line arguments
+//     string filePath = argv[2];
+//     int cutoff = atoi(argv[6]);
+//     string method = argv[4];
+//     int seed;
+//     if( argc == 9 )
+//         seed = atoi(argv[8]);
 
-    // making note of start time of execution
-    chrono::high_resolution_clock::time_point startTime = chrono::high_resolution_clock::now();
+//     // making note of start time of execution
+//     chrono::high_resolution_clock::time_point startTime = chrono::high_resolution_clock::now();
 
-    // find file paths
-    string inputFilePath = "DATA/" + filePath;
-    string instance = filePath.substr(0, filePath.size()-4);
-    string traceFilePath = instance + ".trace";
-    string solFilePath = instance + ".sol";
+//     // find file paths
+//     string inputFilePath = "DATA/" + filePath;
+//     string instance = filePath.substr(0, filePath.size()-4);
+//     string traceFilePath = instance + ".trace";
+//     string solFilePath = instance + ".sol";
 
-    // calling the function to find number of vertices
-    int dim = getDim(inputFilePath);
+//     // calling the function to find number of vertices
+//     int dim = getDim(inputFilePath);
     
-    // calling function to find coordinates of vertices and adjacency matrix
-    int **adj = getAdjMatrix(inputFilePath, dim);
-	// cout << "Number of nodes: " << dim << endl;
+//     // calling function to find coordinates of vertices and adjacency matrix
+//     int **adj = getAdjMatrix(inputFilePath, dim);
+// 	// cout << "Number of nodes: " << dim << endl;
 
-	///Variable for adjacency list representation of MST
-	Prim_MST mst_obj(dim);
-	struct Approximation::Graph* mst = mst_obj.createGraph();
+// 	///Variable for adjacency list representation of MST
+// 	Prim_MST mst_obj(dim);
+// 	struct Approximation::Graph* mst = mst_obj.createGraph();
 
 	
-	mst_obj.primMST(adj, mst);
+// 	mst_obj.primMST(adj, mst);
 
 
-	int *dfsPath = new int[dim];
+// 	int *dfsPath = new int[dim];
 
+// 	srand(3);
+// 	int startingVertex = rand()%dim;
+// 	Graph_DFS g(dim, mst->array);
 
-	int mstV = dim-1;
-	srand(3);
-	int startingVertex = rand()%dim;
-	Graph_DFS g(dim, mst->array);
+// 	cout << "Following is Depth First Traversal"
+// 		" (starting from vertex "<<startingVertex<< endl;
 
-	cout << "Following is Depth First Traversal"
-		" (starting from vertex "<<startingVertex<< endl;
+// 	g.DFS(startingVertex, dfsPath);
+// 	double sumOfEdges = 0.0;
+// 	for (int i = 0; i < dim-1; i++)
+// 	{
+// 		// cout << dfsPath[i] << endl;
+// 		sumOfEdges += adj[dfsPath[i]][dfsPath[i + 1]];
+// 	}
+// 	cout<<endl;
+// 	sumOfEdges += adj[dfsPath[dim - 1]][dfsPath[0]];
+// 	// double opt = 655454.0;
+// 	cout << "Path Cost = " << (sumOfEdges) << endl;
+// 	// cout << "Approximation Ratio = " << (sumOfEdges/opt) << endl;
 
-	g.DFS(startingVertex, dfsPath);
-	double sumOfEdges = 0.0;
-	for (int i = 0; i < dim-1; i++)
-	{
-		// cout << dfsPath[i] << endl;
-		sumOfEdges += adj[dfsPath[i]][dfsPath[i + 1]];
-	}
-	cout<<endl;
-	sumOfEdges += adj[dfsPath[dim - 1]][dfsPath[0]];
-	// double opt = 655454.0;
-	cout << "Path Cost = " << (sumOfEdges) << endl;
-	// cout << "Approximation Ratio = " << (sumOfEdges/opt) << endl;
-
-	return 0;
-}
+// 	return 0;
+// }
