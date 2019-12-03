@@ -54,8 +54,7 @@ public:
 	Genetic(Graph* graph, int size_population, int generations, int mutation_rate, bool show_population, int** adj_mat, int start_point, chrono::high_resolution_clock::time_point startTime, string traceFilePath, string solFilePath, int cutoff); // constructor
 	// Genetic(Graph* graph, int size_population, int generations, int mutation_rate, bool show_population, int** adj_mat, int start_point); // constructor
 
-	int isValidSolution(std::vector<int>& solution); // checks if a solution is valid
-	void showPopulation(); // shows population
+	int pathCost(std::vector<int>& solution); // returns path cost
 	void crossOver(std::vector<int>& parent1, std::vector<int>& parent2); // makes the crossover
 	void insertBinarySearch(std::vector<int>& child, int total_cost); // uses binary search to insert
 	void run(); // runs genetic algorithm

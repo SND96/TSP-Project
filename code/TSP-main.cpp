@@ -1,3 +1,4 @@
+// main function to run TSP using 4 different algos
 #include <algorithm> // std::shuffle
 #include <chrono> // for time
 #include <climits> // for INT_MAX
@@ -148,7 +149,9 @@ int main(int argc, char**argv)
                     trial.write_trace();
                     break;
                 }
-        case 3: {   if(flag == 1)
+        case 3: {   
+                    srand(seed);
+                    if(flag == 1)
                     {
                         traceFilePath = traceFilePath + "_" + to_string(seed) +".trace";
                         solFilePath = solFilePath + "_" + to_string(seed) +".sol";
@@ -159,7 +162,7 @@ int main(int argc, char**argv)
                         {
                             graph1->addEdge(i,j,adj[i][j]);
                         }
-                    Genetic gen(graph1, 10, 1000000, 5, true, adj,  0, startTime, traceFilePath, solFilePath, cutoff);
+                    Genetic gen(graph1, 10, 10000000, 5, true, adj,  0, startTime, traceFilePath, solFilePath, cutoff);
                     gen.run(); 
                     break;
                 }

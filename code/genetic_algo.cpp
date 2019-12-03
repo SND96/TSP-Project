@@ -129,7 +129,7 @@ bool Genetic::existsChromosome(const vector<int> & v)
 	return false;
 }
 
-int Genetic::isValidSolution(vector<int>& solution)
+int Genetic::pathCost(vector<int>& solution)
 {
 	int total_cost = 0;
 	set<int> set_solution;
@@ -176,7 +176,7 @@ void Genetic::initialPopulation() // generates the initial population
 			parent.push_back(i);
 	}
 		
-	int total_cost = isValidSolution(parent);
+	int total_cost = pathCost(parent);
 	
 	if(total_cost != -1) // checks if the parent is valid
 	{
@@ -190,7 +190,7 @@ void Genetic::initialPopulation() // generates the initial population
 		// generates a random permutation
 		random_shuffle(parent.begin() + 1, parent.begin() + (rand() % (graph->V - 1) + 1));
 		
-		int total_cost = isValidSolution(parent); // checks if solution is valid
+		int total_cost = pathCost(parent); // checks if solution is valid
 		
 		// checks if permutation is a valid solution and if not exists
 		if(total_cost != -1 && !existsChromosome(parent))
@@ -208,23 +208,6 @@ void Genetic::initialPopulation() // generates the initial population
 	else
 		sort(population.begin(), population.end(), sort_pred()); // sort population
 }
-
-
-void Genetic::showPopulation()
-{
-	cout << "\nShowing solutions...\n\n";
-	for(vector<pair<vector<int>, int> >::iterator it=population.begin(); it!=population.end(); ++it)
-	{
-		const vector<int>& vec = (*it).first; // gets the vector
-		
-		for(int i = 0; i < graph->V; i++)
-			cout << vec[i] << " ";
-		cout << start_point;
-		cout << " | Cost: " << (*it).second << "\n\n";
-	}
-	cout << "\nPopulation size: " << real_size_population << endl;
-}
-
 
 // inserts in the vector using binary search
 void Genetic::insertBinarySearch(vector<int>& child, int total_cost)
@@ -379,8 +362,8 @@ void Genetic::crossOver(vector<int>& parent1, vector<int>& parent2)
 		child2[index_gene2] = aux;
 	}
 	
-	int total_cost_child1 = isValidSolution(child1);
-	int total_cost_child2 = isValidSolution(child2);
+	int total_cost_child1 = pathCost(child1);
+	int total_cost_child2 = pathCost(child2);
 	
 	// checks if is a valid solution and not exists in the population
 	if(total_cost_child1 != -1 && !existsChromosome(child1))
