@@ -129,7 +129,7 @@ bool Genetic::existsChromosome(const vector<int> & v)
 	return false;
 }
 
-int Genetic::isValidSolution(vector<int>& solution)
+int Genetic::pathCost(vector<int>& solution)
 {
 	int total_cost = 0;
 	set<int> set_solution;
@@ -176,7 +176,7 @@ void Genetic::initialPopulation() // generates the initial population
 			parent.push_back(i);
 	}
 		
-	int total_cost = isValidSolution(parent);
+	int total_cost = pathCost(parent);
 	
 	if(total_cost != -1) // checks if the parent is valid
 	{
@@ -190,7 +190,7 @@ void Genetic::initialPopulation() // generates the initial population
 		// generates a random permutation
 		random_shuffle(parent.begin() + 1, parent.begin() + (rand() % (graph->V - 1) + 1));
 		
-		int total_cost = isValidSolution(parent); // checks if solution is valid
+		int total_cost = pathCost(parent); // checks if solution is valid
 		
 		// checks if permutation is a valid solution and if not exists
 		if(total_cost != -1 && !existsChromosome(parent))
@@ -208,23 +208,6 @@ void Genetic::initialPopulation() // generates the initial population
 	else
 		sort(population.begin(), population.end(), sort_pred()); // sort population
 }
-
-
-void Genetic::showPopulation()
-{
-	cout << "\nShowing solutions...\n\n";
-	for(vector<pair<vector<int>, int> >::iterator it=population.begin(); it!=population.end(); ++it)
-	{
-		const vector<int>& vec = (*it).first; // gets the vector
-		
-		for(int i = 0; i < graph->V; i++)
-			cout << vec[i] << " ";
-		cout << start_point;
-		cout << " | Cost: " << (*it).second << "\n\n";
-	}
-	cout << "\nPopulation size: " << real_size_population << endl;
-}
-
 
 // inserts in the vector using binary search
 void Genetic::insertBinarySearch(vector<int>& child, int total_cost)
@@ -379,8 +362,8 @@ void Genetic::crossOver(vector<int>& parent1, vector<int>& parent2)
 		child2[index_gene2] = aux;
 	}
 	
-	int total_cost_child1 = isValidSolution(child1);
-	int total_cost_child2 = isValidSolution(child2);
+	int total_cost_child1 = pathCost(child1);
+	int total_cost_child2 = pathCost(child2);
 	
 	// checks if is a valid solution and not exists in the population
 	if(total_cost_child1 != -1 && !existsChromosome(child1))
@@ -538,119 +521,118 @@ void Genetic::writeToOutputFile()
 }
 ///////////////////////////
 // function to get the adjacency matrix and coordinates of vertices
-int** getAdjMatrix(string filePath, int dim)
-{
-	string line;
-	ifstream tsp_inp;
-	tsp_inp.open(filePath);
-	int count_line = 0, i;
+// int** getAdjMatrix(string filePath, int dim)
+// {
+// 	string line;
+// 	ifstream tsp_inp;
+// 	tsp_inp.open(filePath);
+// 	int count_line = 0, i;
 
-	double** coord = new double*[dim];
-	for (i = 0; i < dim; ++i)
-		coord[i] = new double[2];
-	i = 0;
-	if (tsp_inp.is_open()){
-		while (getline(tsp_inp, line)){
-			count_line += 1;
-			if ((count_line >= 6) && (count_line < (dim + 6))){
-				istringstream iss(line);
-				int a;
-				double b, c;
-				if (iss >> a >> b >> c) {
-					coord[i][0] = b;
-					coord[i][1] = c;
-					i++;
-				}
-			}
-		}
-	}
-	tsp_inp.close();
-	int** adj = new int*[dim];
+// 	double** coord = new double*[dim];
+// 	for (i = 0; i < dim; ++i)
+// 		coord[i] = new double[2];
+// 	i = 0;
+// 	if (tsp_inp.is_open()){
+// 		while (getline(tsp_inp, line)){
+// 			count_line += 1;
+// 			if ((count_line >= 6) && (count_line < (dim + 6))){
+// 				istringstream iss(line);
+// 				int a;
+// 				double b, c;
+// 				if (iss >> a >> b >> c) {
+// 					coord[i][0] = b;
+// 					coord[i][1] = c;
+// 					i++;
+// 				}
+// 			}
+// 		}
+// 	}
+// 	tsp_inp.close();
+// 	int** adj = new int*[dim];
 
-	for (i = 0; i < dim; ++i)
-		adj[i] = new int[dim];
+// 	for (i = 0; i < dim; ++i)
+// 		adj[i] = new int[dim];
 
-	// find euclidean distance
-	for (i = 0; i < dim; i++)
-		for (int j = 0; j <= i; j++) {
-			if (i == j)
-				adj[i][j] = 0;
-			else
-				adj[j][i] = adj[i][j] = round(sqrt((coord[i][0] - coord[j][0])*(coord[i][0] - coord[j][0]) + (coord[i][1] - coord[j][1])*(coord[i][1] - coord[j][1])));
-		}
+// 	// find euclidean distance
+// 	for (i = 0; i < dim; i++)
+// 		for (int j = 0; j <= i; j++) {
+// 			if (i == j)
+// 				adj[i][j] = 0;
+// 			else
+// 				adj[j][i] = adj[i][j] = round(sqrt((coord[i][0] - coord[j][0])*(coord[i][0] - coord[j][0]) + (coord[i][1] - coord[j][1])*(coord[i][1] - coord[j][1])));
+// 		}
 
-	return adj;
-}
+// 	return adj;
+// }
 
-int getDim(string filePath)
-{
-	string line;
-	ifstream tsp_inp;
-	tsp_inp.open(filePath);
-	int count_line = 0, dim;
-	if (tsp_inp.is_open())
-	{
-		while (getline(tsp_inp, line))
-		{
-			count_line += 1;
-			if (count_line == 3)
-			{
-				istringstream iss(line);
-				string s;
-				if (iss >> s >> dim)
-					break;
-			}
-		}
-	}
-	return dim;
-}
+// int getDim(string filePath)
+// {
+// 	string line;
+// 	ifstream tsp_inp;
+// 	tsp_inp.open(filePath);
+// 	int count_line = 0, dim;
+// 	if (tsp_inp.is_open())
+// 	{
+// 		while (getline(tsp_inp, line))
+// 		{
+// 			count_line += 1;
+// 			if (count_line == 3)
+// 			{
+// 				istringstream iss(line);
+// 				string s;
+// 				if (iss >> s >> dim)
+// 					break;
+// 			}
+// 		}
+// 	}
+// 	return dim;
+// }
 
 
-int main(int argc, char**argv)
-{
-	string filePath = argv[2];
-    int cutoff = atoi(argv[6]);
-    string method = argv[4];
-    int seed;
-    if( argc == 9 )
-        seed = atoi(argv[8]);
+// int main(int argc, char**argv)
+// {
+// 	string filePath = argv[2];
+//     int cutoff = atoi(argv[6]);
+//     string method = argv[4];
+//     int seed;
+//     if( argc == 9 )
+//         seed = atoi(argv[8]);
 
-    // making note of start time of execution
-    chrono::high_resolution_clock::time_point startTime = chrono::high_resolution_clock::now();
+//     // making note of start time of execution
+//     chrono::high_resolution_clock::time_point startTime = chrono::high_resolution_clock::now();
 
-    // find file paths
-    string inputFilePath = "DATA/" + filePath;
-    string instance = filePath.substr(0, filePath.size()-4);
-    string traceFilePath = "output/" + instance + ".trace";
-    string solFilePath = "output/" + instance + ".sol";
+//     // find file paths
+//     string inputFilePath = "DATA/" + filePath;
+//     string instance = filePath.substr(0, filePath.size()-4);
+//     string traceFilePath = "output/" + instance + ".trace";
+//     string solFilePath = "output/" + instance + ".sol";
 
-    // find file paths
-	//get Adjacency Matrix
-	// inputFilePath = "DATA/Cincinnati.tsp";
-	int dim = getDim(inputFilePath);
-	int** adj = getAdjMatrix(inputFilePath, dim);
-	cout << "Number of nodes: " << dim << endl;
+//     // find file paths
+// 	//get Adjacency Matrix
+// 	// inputFilePath = "DATA/Cincinnati.tsp";
+// 	int dim = getDim(inputFilePath);
+// 	int** adj = getAdjMatrix(inputFilePath, dim);
+// 	cout << "Number of nodes: " << dim << endl;
 
-	///Variable for adjacency list representation of MST
-	int start = 3;
+// 	///Variable for adjacency list representation of MST
 
-	Graph * graph1 = new Graph(dim);
+// 	Graph * graph1 = new Graph(dim);
 
-	for(int i=0;i<dim; i++)
-		for(int j =0; j<dim; j++)
-		{
-			graph1->addEdge(i,j,adj[i][j]);
-		}
+// 	for(int i=0;i<dim; i++)
+// 		for(int j =0; j<dim; j++)
+// 		{
+// 			graph1->addEdge(i,j,adj[i][j]);
+// 		}
 
-	Genetic gen(graph1, 10, 1000000, 5, true, adj,  start, startTime, traceFilePath, solFilePath, cutoff);
+// 	Genetic gen(graph1, 10, 1000000, 5, true, adj,  0, startTime, traceFilePath, solFilePath, cutoff);
 
-	// struct Gen_Graph::Graph* mst = mst_obj.createGraph();
+// 	// struct Gen_Graph::Graph* mst = mst_obj.createGraph();
 
 	
-	const clock_t begin_time = clock(); // gets time
-	gen.run(); // runs the genetic algorithm
-	cout << "\n\nTime for to run the genetic algorithm: " << float(clock () - begin_time) /  CLOCKS_PER_SEC << " seconds."; // shows time in seconds
+// 	const clock_t begin_time = clock(); // gets time
+// 	gen.run(); // runs the genetic algorithm
+// 	cout << "\n\nTime for to run the genetic algorithm: " << float(clock () - begin_time) /  CLOCKS_PER_SEC << " seconds."; // shows time in seconds
 
 
-	return 0;
-}
+// 	return 0;
+// }

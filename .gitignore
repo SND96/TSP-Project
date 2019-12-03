@@ -1,5 +1,5 @@
 DATA
-a.out
+*.out
 sa.o*
 .vscode
 Untitled.ipynb
