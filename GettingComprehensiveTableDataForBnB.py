@@ -155,10 +155,10 @@ if __name__ == '__main__':
     Example: QRTD plot for simulated annealing NYC results
     """
     City = ['Atlanta', 'Berlin', 'Boston', 'Champaign', 'Cincinnati', 'Denver', 'NYC',  'Philadelphia', 'Roanoke', 'SanFrancisco', 'Toronto', 'UKansasState', 'UMissouri']
-    Algorithm = 'Approx'
+    Algorithm = 'BnB'
     out = []
     for city1 in City:
-        plotter = QRTD('output', city1, Algorithm)
+        plotter = QRTD('BnB_out', city1, Algorithm)
         #plotter.build(times=np.array([0.1,0.3,1, 3.2,10]), colors=['b', 'g', 'r', 'c', 'y'], linestyles = ['-','--','-.',':', '-'], maxSolQualPerc = 40, solutQualPercInterval = 0.1, should_show=True, xscale=None)
         buf = plotter.build(title = 'SQD_' + city1 +'_' + Algorithm,times=np.array([0.1,0.6, 0.7, 1, 3.2,10]), colors=['g', 'r', 'c', 'y', 'b', 'g'], linestyles = ['--','-.',':', '-','-.',':'], maxSolQualPerc = 40, solutQualPercInterval = 0.1, should_show=True, xscale=None)
         out.append(buf)
