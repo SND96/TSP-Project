@@ -160,7 +160,7 @@ int main(int argc, char**argv)
                     gen.run(); 
                     break;
                 }
-        default: {
+        default:{
                     cout<<"Incorrect input";
                     break;
                 }

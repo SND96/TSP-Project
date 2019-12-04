@@ -16,3 +16,5 @@ The output folder containts all .sol and .trace files.
 
 Example of how to compile the make file:
 ./main -inst Cincinnati.tsp -alg LS2 -time 13 -seed 3
+
+(ignore the warnings)
