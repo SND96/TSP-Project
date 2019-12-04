@@ -119,6 +119,7 @@ class QRTD(Plotter):
 ######################################        
         #get each trial data
         dataNp = self.df_trials.to_numpy()
+        #print(dataNp)
         lastInd = dataNp.shape[0]-1
         lastTrialNum = dataNp[lastInd, 0]
 
@@ -180,7 +181,7 @@ if __name__ == '__main__':
     """
     Example: QRTD plot for simulated annealing NYC results
     """
-    City = 'Champaign'
+    City = 'Denver'
     Algorithm = 'LS1'
     plotter = QRTD('output', City, Algorithm)
     #plotter.build(times=np.array([0.1,0.3,1, 3.2,10]), colors=['b', 'g', 'r', 'c', 'y'], linestyles = ['-','--','-.',':', '-'], maxSolQualPerc = 40, solutQualPercInterval = 0.1, should_show=True, xscale=None)
