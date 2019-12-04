@@ -153,7 +153,7 @@ if __name__ == '__main__':
     Example: QRTD plot for simulated annealing NYC results
     """
     City = ['Atlanta', 'Berlin', 'Boston', 'Champaign', 'Cincinnati', 'Denver', 'NYC',  'Philadelphia', 'Roanoke', 'SanFrancisco', 'Toronto', 'UKansasState', 'UMissouri']
-    Algorithm = 'LS1'
+    Algorithm = 'LS2'
     out = []
     for city1 in City:
         plotter = QRTD('output', city1, Algorithm)
